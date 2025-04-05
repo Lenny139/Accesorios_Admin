@@ -1,0 +1,331 @@
+/*! HTML5 Boilerplate v9.0.1 | MIT License | https://html5boilerplate.com/ */
+
+/* main.css 3.0.0 | MIT License | https://github.com/h5bp/main.css#readme */
+/*
+ * What follows is the result of much research on cross-browser styling.
+ * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
+ * Kroc Camen, and the H5BP dev community and team.
+ */
+
+/* ==========================================================================
+   Base styles: opinionated defaults
+   ========================================================================== */
+
+
+/* General body styling */
+body {
+  font-family: 'Poppins', sans-serif; /* Sets the font family */
+  margin: 0; /* Removes default margin */
+  padding: 0; /* Removes default padding */
+  box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+  background-color: rgb(30, 30, 30); /* Dark background color */
+  color: white; /* White text color */
+  display: flex; /* Enables flexbox layout */
+  flex-direction: column; /* Stacks flex items vertically */
+  height: 100vh; /* Full viewport height */
+  overflow-x: hidden;
+}
+
+/* Header styling */
+header {
+  background-color: transparent; /* Sets a transparent background for the header */
+  color: white; /* Changes the text color to white */
+  padding: 2vh 5vw; /* Adds padding relative to the viewport height and width */
+  display: flex; /* Uses flexbox for layout */
+  justify-content: flex-start; /* Aligns content to the start of the flex container */
+  align-items: center; /* Vertically centers the content */
+  position: fixed; /* Fixes the header position at the top of the viewport */
+  top: 0; /* Positions the header at the top of the page */
+  left: 0; /* Aligns the header to the left edge of the viewport */
+  width: 100%; /* Makes the header span the full width of the viewport */
+  z-index: 1000; /* Ensures the header appears above other content */
+  transition: background-color 0.5s ease, box-shadow 0.5s ease; /* Smoothly transitions background color and box shadow over 0.5 seconds */
+}
+
+/* Logo styling */
+#logo {
+  width: 15vw; /* Sets the logo width to 15% of the viewport width */
+  height: auto; /* Keeps the logo's aspect ratio while adjusting the width */
+  margin-right: 3vw; /* Adds a right margin of 3% of the viewport width */
+  margin-left: -1vw; /* Moves the logo slightly to the left by 1% of the viewport width */
+  margin-top: 1vw; /* Adds a top margin of 1% of the viewport width */
+}
+
+/* Navigation styling */
+nav ul {
+  list-style: none; /* Removes the default bullet points from the list */
+  padding: 0; /* Removes the default padding */
+  margin: 0; /* Removes the default margin */
+  display: flex; /* Displays the list items in a flexible row layout */
+  align-items: center; /* Vertically centers the list items within the flex container */
+}
+
+nav ul li {
+  margin: 0 1.5vw; /* Adds horizontal spacing of 1.5vw on both sides of each list item */
+}
+
+/* Navigation link styling */
+nav ul li a {
+  color: white; /* Sets the text color to white */
+  text-decoration: none; /* Removes the underline from links */
+  font-size: 1.5vw; /* Sets the font size to 1.5% of the viewport width */
+  font-family: 'Poppins', sans-serif; /* Applies the 'Poppins' font with a fallback to sans-serif */
+  font-weight: normal; /* Sets the font weight to normal */
+  position: relative; /* Establishes a relative position for absolute positioning of child elements */
+  padding-bottom: 5px; /* Adds 5px of padding below the link */
+}
+
+nav ul li a::after {
+  content: ''; /* Inserts an empty content element for the pseudo-element */
+  position: absolute; /* Positions the element relative to its parent */
+  left: 0; /* Aligns the element to the left edge of the parent */
+  bottom: 0; /* Positions the element at the bottom of the parent */
+  width: 100%; /* Sets the width to 100% of the parent element */
+  height: 2px; /* Sets the height to 2 pixels */
+  background-color: rgb(255, 51, 95); /* Sets the underline color to a pinkish red */
+  transform: scaleX(0); /* Initially scales the element to 0 on the X-axis (hidden) */
+  transform-origin: bottom left; /* Defines the starting point of the transformation */
+  transition: transform 0.3s ease; /* Smoothly animates the transform property over 0.3 seconds */
+}
+
+nav ul li a:hover::after {
+  transform: scaleX(1); /* Expands the underline to full width on hover */
+}
+
+/* Style for the slider switch */
+.switch {
+  position: relative; /* Allows absolute positioning of child elements */
+  display: inline-block; /* Ensures the switch is treated as an inline block */
+  width: 50px; /* Width of the switch slider */
+  height: 25px; /* Height of the switch slider */
+  margin-left: 50px; /* Space between the switch and the left side */
+}
+
+/* Hide the checkbox input */
+.switch input {
+  opacity: 0; /* Makes the checkbox invisible */
+  width: 0; /* Removes width to prevent interaction */
+  height: 0; /* Removes height to prevent interaction */
+}
+
+/* Style for the slider (visible part of the switch) */
+.slider {
+  position: absolute; /* Positioned relative to the .switch container */
+  cursor: pointer; /* Changes the cursor to a pointer when hovering */
+  top: 0; /* Aligns the slider to the top of the container */
+  left: 0; /* Aligns the slider to the left of the container */
+  right: 0; /* Ensures the slider stretches to the right */
+  bottom: 0; /* Ensures the slider stretches to the bottom */
+  background-color: #444; /* Default slider background color (dark mode) */
+  border-radius: 25px; /* Rounds the edges to create a pill-shaped slider */
+  transition: 0.4s; /* Smooth transition effect for background and position changes */
+}
+
+/* Sliding indicator (the circle with an icon) */
+.slider::before {
+  content: "🌙"; /* Displays a moon icon for dark mode */
+  display: flex; /* Enables flexbox for centering the icon */
+  align-items: center; /* Vertically centers the icon within the circle */
+  justify-content: center; /* Horizontally centers the icon within the circle */
+  position: absolute; /* Positions the circle relative to the .slider container */
+  height: 18px; /* Circle height (sliding indicator size) */
+  width: 18px; /* Circle width (sliding indicator size) */
+  left: 4px; /* Initial position of the circle (dark mode) */
+  bottom: 3.5px; /* Distance from the bottom edge of the slider */
+  background-color: white; /* Background color of the circle (white) */
+  border-radius: 50%; /* Makes the circle perfectly round */
+  transition: 0.4s; /* Smooth animation when switching themes */
+  font-size: 14px; /* Size of the moon icon */
+}
+
+/* When the checkbox is checked (light mode) */
+input:checked + .slider {
+  background-color: #ccc; /* Changes the slider background to light gray */
+}
+
+/* Moves the circle to the right (light mode) */
+input:checked + .slider::before {
+  transform: translateX(24px); /* Shifts the circle 24px to the right */
+  content: "☀️"; /* Displays a sun icon for light mode */
+  color: rgb(173, 216, 230); /* Light blue color for the sun icon */
+}
+
+/* Light mode: changes the background to white and the text to black */
+.light-mode {
+  background-color: white; /* White background for light mode */
+  color: black; /* Black text color for better contrast */
+}
+
+/* Adjusts the link color in light mode */
+.light-mode nav ul li a {
+  color: black; /* Changes navigation links to black for readability */
+}
+
+/* Adjusts the highlighted text color in light mode */
+.light-mode .texto-destacado {
+  color: black; /* Ensures prominent text remains black in light mode */
+}
+
+/* Changes the button color in light mode */
+.light-mode .btn-elige {
+  background-color: rgb(0, 40, 159); /* Dark blue background for the button */
+  color: white; /* White text for contrast against the blue background */
+}
+
+/* Adjusts the hover color of the button in light mode */
+.light-mode .btn-elige:hover {
+  background-color: rgb(0, 30, 120); /* Slightly darker blue when hovering */
+}
+
+/* Changes the color of the word 'carro' in light mode */
+.light-mode .carro {
+  color: rgb(0, 40, 159); /* Dark blue text to highlight the word 'carro' */
+}
+
+/* Changes the underline color for links in light mode */
+.light-mode nav ul li a::after {
+  background-color: rgb(0, 40, 159); /* Dark blue underline effect */
+}
+
+/* Polygon background image styling */
+.polygon-1 {
+  height: 120vh; /* Sets the height to 120% of the viewport height */
+  width: 280%; /* Sets the width to 280% of the container */
+  position: absolute; /* Positions the element relative to its nearest positioned ancestor */
+  top: -70vh; /* Moves the element 70% of the viewport height above its normal position */
+  left: 10%; /* Moves the element 10% to the right from the left edge of its container */
+  transform: translateX(-19%); /* Shifts the element 19% of its own width to the left */
+  z-index: -1; /* Places the element behind other content */
+  overflow: hidden; /* Hides any content that overflows the element's box */
+}
+
+/* Right image styling */
+.right-image {
+  position: relative; /* Positions the element relative to its normal position */
+  top: 10vh; /* Moves the element 10% of the viewport height down */
+  right: -35vw; /* Moves the element 35% of the viewport width to the left (negative value) */
+  width: 60vw; /* Sets the width to 60% of the viewport width */
+  height: auto; /* Automatically adjusts the height to maintain the aspect ratio */
+  z-index: 2; /* Places the element above other content with a lower z-index */
+  overflow: hidden; /* Hides any content that overflows the element's box */
+}
+
+
+/* Main content styling */
+main {
+  flex-grow: 1; /* Allows main content to expand */
+  display: flex; /* Flexbox layout */
+  flex-direction: column; /* Stacks items vertically */
+  align-items: center; /* Centers content horizontally */
+  justify-content: flex-start; /* Aligns content at the top */
+  padding-top: 15vh; /* Space below the fixed header */
+}
+
+/* Style for the new text below */
+.subtexto {
+  font-weight: normal; /* Sets the font weight to normal */
+  font-size: 1.4rem; /* Sets the font size to 1.4 rem */
+  line-height: 1.5; /* Sets the line height to 1.5 for better readability */
+  color: rgb(101, 101, 101);  /* Sets the text color to a gray shade */
+  margin: 10px 0; /* Adds 10px margin to the top and bottom */
+}
+
+/* Header shadow on scroll */
+header.scrolled {
+  box-shadow: 0 8px 20px rgba(210, 191, 195, 0.8); /* Adds a soft shadow when scrolled */
+  background-color: rgb(30, 30, 30);;
+}
+
+/* Header shadow on scroll */
+.light-mode header.scrolled {
+  box-shadow: 0 8px 20px rgba(210, 191, 195, 0.8); /* Adds a soft shadow when scrolled */
+  background-color: white;
+}
+
+/* Style for the new text below (light mode) */
+.light-mode .subtexto {
+  font-weight: normal; /* Sets the font weight to normal */
+  font-size: 1.4rem; /* Sets the font size to 1.4 rem */
+  line-height: 1.5;  /* Sets the line height to 1.5 for better readability */
+  color: rgb(101, 101, 101); /* Sets the text color to a gray shade */
+  margin: 10px 0; /* Adds 10px margin to the top and bottom */
+}
+
+/* Highlighted text section */
+.texto-destacado {
+  font-family: 'Poppins', sans-serif;  /* Sets the font family to 'Poppins' with sans-serif fallback */
+  font-size: 3rem; /* Sets the font size to 3 rem */
+  font-weight: 600; /* Sets the font weight to 600 for a bold appearance */
+  color: white; /* Sets the text color to white */
+  text-align: left; /* Aligns the text to the left */
+  line-height: 1.2; /* Sets the line height to 1.2 for better spacing between lines */
+  z-index: 3; /* Sets the z-index to 3 to ensure it appears above other elements */
+  position: absolute; /* Positions the text absolutely within the parent */
+  top: 30vh; /* Positions the text 30% from the top of the viewport */
+  left: 23%; /* Positions the text 23% from the left of the viewport */
+  transform: translateX(-50%); /* Centers the text horizontally by translating it -50% of its width */
+}
+
+/* Styling for 'carro' highlight
+   - Changes text color to pink for visual differentiation. */
+.carro {
+  color: rgb(255, 51, 95);  /* Sets the text color to a pinkish shade (RGB value: 255, 51, 95) */
+}
+
+
+/* Button styling elige */
+.btn-elige {
+  font-family: 'Poppins', sans-serif;  /* Sets the font family to Poppins */
+  background-color: rgb(255, 51, 95);  /* Sets the background color to a pinkish shade (RGB value: 255, 51, 95) */
+  color: white;  /* Sets the text color to white */
+  border: none;  /* Removes the border */
+  border-radius: 20px;  /* Rounds the corners of the button with a radius of 20px */
+  padding: 15px 30px;  /* Adds padding of 15px top and bottom, 30px left and right */
+  font-size: 1.5rem;  /* Sets the font size to 1.5rem */
+  cursor: pointer;  /* Changes the cursor to a pointer when hovering over the button */
+  margin-top: 40px;  /* Adds a top margin of 40px */
+  transition: background-color 0.4s ease;  /* Adds a smooth transition effect for background color change */
+}
+
+.btn-elige:hover {
+  background-color: rgb(210, 26, 90);  /* Changes the background color to a darker pink when the button is hovered */
+}
+
+/* Responsive styles for small screens
+   - Stacks navigation vertically.
+   - Adjusts image and text sizes for better fit. */
+@media (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav ul li {
+    margin: 1vw 0;
+  }
+
+  nav ul li a {
+    font-size: 4vw;
+  }
+
+  .polygon-1 {
+    height: 150vh;
+  }
+
+  .right-image {
+    width: 40vw;
+    top: 10vh;
+  }
+}
+
+/* Responsive styles for large screens
+   - Adjusts font and image sizes for better readability. */
+@media (min-width: 1200px) {
+  nav ul li a {
+    font-size: 1.2vw;
+  }
+
+  .polygon-1 {
+    height: 180vh;
+  }
+}

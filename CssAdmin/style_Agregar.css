@@ -1,0 +1,338 @@
+.pag-accesorios-agregar-2-admin,
+.pag-accesorios-agregar-2-admin * {
+  box-sizing: border-box;
+}
+.pag-accesorios-agregar-2-admin {
+  background: #191919;
+  height: 1954px;
+  overflow: hidden;
+}
+.frame-124 {
+  background: #2c2c2c;
+  border-radius: 13px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 226px;
+  position: absolute;
+  left: 353px;
+  top: 1558px;
+}
+.adjuntar-imagen {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.frame-133 {
+  display: flex;
+  flex-direction: column;
+  gap: 51px;
+  align-items: flex-start;
+  justify-content: center;
+  position: absolute;
+  left: calc(50% - 553px);
+  top: 655px;
+}
+.frame-126 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 1015px;
+  position: relative;
+}
+.id {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 41.46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.inserta-un-id-unico-del-producto {
+  color: #747474;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 31.1px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.line-1 {
+  margin-top: -1px;
+  border-style: solid;
+  border-color: #ffffff;
+  border-width: 1px 0 0 0;
+  align-self: stretch;
+  flex-shrink: 0;
+  height: 0px;
+  position: relative;
+}
+.frame-127 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-start;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1015px;
+  position: relative;
+}
+.nombre {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 41.46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.coloca-el-nombre-del-producto {
+  color: #747474;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 31.1px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.frame-128 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 1015px;
+  position: relative;
+}
+.precio {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 41.46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.coloca-el-precio-el-producto {
+  color: #747474;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 31.1px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.frame-129 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 1015px;
+  position: relative;
+}
+.stock {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 41.46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.coloca-el-stock-actual-del-producto {
+  color: #747474;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 31.1px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.frame-130 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 1015px;
+  position: relative;
+}
+.marca {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 41.46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.coloca-para-que-marca-de-carro-es-el-accesorio {
+  color: #747474;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 31.1px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.frame-131 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 1015px;
+  position: relative;
+}
+.descripci-n {
+  color: #ffffff;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 41.46px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.genera-una-descripci-n-sobre-el-producto {
+  color: #747474;
+  text-align: left;
+  font-family: "Poppins-Light", sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  position: relative;
+  align-self: stretch;
+  height: 31.1px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.frame-125 {
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 205px;
+  position: absolute;
+  right: 314px;
+  top: 1568px;
+}
+.agregar {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  position: relative;
+}
+.frame-132 {
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: center;
+  width: 205px;
+  position: absolute;
+  left: 353px;
+  top: 1728px;
+}
+.volver {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  position: relative;
+}
+.secci-n-accesorios-de-parqueo-agregar {
+  text-align: left;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 70px;
+  font-weight: 600;
+  position: absolute;
+  right: 9.15%;
+  left: 7.46%;
+  width: 83.38%;
+  top: 317px;
+  height: 224px;
+}
+.secci-n-accesorios-de-parqueo-agregar-span {
+  color: #ffffff;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 70px;
+  font-weight: 600;
+}
+.secci-n-accesorios-de-parqueo-agregar-span2 {
+  color: #ff335f;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 70px;
+  font-weight: 600;
+}
