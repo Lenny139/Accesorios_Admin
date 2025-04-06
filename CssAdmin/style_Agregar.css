@@ -10,7 +10,6 @@
 .frame-124 {
   background: #2c2c2c;
   border-radius: 13px;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -271,7 +270,6 @@
 .frame-125 {
   background: #ff335f;
   border-radius: 17px;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -282,18 +280,9 @@
   right: 314px;
   top: 1568px;
 }
-.agregar {
-  color: #ffffff;
-  text-align: center;
-  font-family: "Poppins-Regular", sans-serif;
-  font-size: 35px;
-  font-weight: 400;
-  position: relative;
-}
 .frame-132 {
   background: #ff335f;
   border-radius: 17px;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -336,3 +325,62 @@
   font-size: 70px;
   font-weight: 600;
 }
+/* === Estilos para botones generales === */
+
+.boton-accion {
+  all: unset;
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px 20px;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  color: #ffffff;
+  cursor: pointer;
+  width: 272px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.boton-accion.adjuntar {
+  width: 300px; /* ligeramente más ancho para texto largo */
+}
+
+.boton-accion.agregar {
+  width: 272px;
+}
+
+.boton-accion:hover {
+  background-color: #e02952;
+}
+
+/* === Botón Volver === */
+
+.boton-volver {
+  all: unset;
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px 30px;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  color: #ffffff;
+  cursor: pointer;
+  height: 63px;
+  width: 165px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.boton-volver:hover {
+  background-color: #e02952;
+}
+
+
