@@ -194,7 +194,6 @@
 .frame-132 {
   background: #ff335f;
   border-radius: 17px;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -216,7 +215,6 @@
 .frame-133 {
   background: #ff335f;
   border-radius: 17px;
-  padding: 10px;
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -238,7 +236,6 @@
 .frame-134 {
   background: #ff335f;
   border-radius: 17px;
-  padding: 10px;
   display: flex;
   flex-direction: row;
   gap: 10px;
@@ -580,6 +577,90 @@
   justify-content: center;
 }
 
+/* === Botones principales (Borrar) === */
+.boton-accion {
+  all: unset;
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px 20px;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  color: #ffffff;
+  cursor: pointer;
+  width: 272px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.boton-accion.borrar {
+  width: 272px;
+}
+
+.boton-accion:hover {
+  background-color: #e02952;
+}
+
+/* === Botón Volver === */
+.boton-volver {
+  all: unset;
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px 30px;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  color: #ffffff;
+  cursor: pointer;
+  height: 63px;
+  width: 165px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.boton-volver:hover {
+  background-color: #e02952;
+}
+
+input.inserta-el-id-del-producto-a-borrar,
+input.borrar-desde-el-id,
+input.terminar-hasta-el-id {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  width: 100%;
+  outline: none;
+  padding: 4px 0;
+  box-sizing: border-box;
+}
+
+input.buscar-item {
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: black;
+  font-size: inherit;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  box-shadow: none;
+  text-align: left;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
 
 
 

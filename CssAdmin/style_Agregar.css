@@ -383,4 +383,11 @@
   background-color: #e02952;
 }
 
-
+input,
+textarea {
+  background-color: transparent;
+  color: inherit; /* mantiene el color de texto según tu estilo */
+  border: none;
+  outline: none;
+  font: inherit;
+}
