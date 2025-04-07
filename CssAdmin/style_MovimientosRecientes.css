@@ -5,7 +5,6 @@
 .pag-accesorios-agregar-admin {
   background: #191919;
   height: 1969px;
-  position: relative;
   overflow: hidden;
 }
 .movimientos {
@@ -15,11 +14,11 @@
   font-size: 67px;
   font-weight: 600;
   position: absolute;
-  left: calc(50% - 474px);
-  bottom: 70.8%;
-  top: 17.32%;
-  height: 11.88%;
-  width: 1148px;
+  right: -1.85%;
+  left: 13.54%;
+  width: 88.31%;
+  top: 341px;
+  height: 234.01px;
 }
 .buscar-item {
   color: #191919;
@@ -48,11 +47,9 @@
   align-items: center;
   justify-content: center;
   width: 205px;
-  height: 3.21%;
   position: absolute;
-  left: calc(50% - 605px);
-  bottom: 7.96%;
-  top: 88.83%;
+  left: calc(50% - 506px);
+  top: 1749px;
 }
 .volver {
   color: #ffffff;
@@ -68,12 +65,10 @@
   gap: 32px;
   align-items: center;
   justify-content: flex-start;
-  height: 16.2%;
   position: absolute;
   left: 50%;
   translate: -50%;
-  bottom: 54.99%;
-  top: 28.81%;
+  top: 567.17px;
 }
 .frame-134 {
   background: #2c2c2c;
@@ -82,10 +77,9 @@
   flex-direction: column;
   gap: 20px;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   flex-shrink: 0;
   width: 404px;
-  height: 304px;
   position: relative;
 }
 .luces-led {
@@ -108,8 +102,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 272px;
-  height: 76px;
+  width: 217px;
   position: relative;
 }
 .agregar {
@@ -155,14 +148,6 @@
   width: 217px;
   position: relative;
 }
-.eliminar {
-  color: #ffffff;
-  text-align: center;
-  font-family: "Poppins-Regular", sans-serif;
-  font-size: 35px;
-  font-weight: 400;
-  position: relative;
-}
 .frame-136 {
   background: #2c2c2c;
   padding: 40px;
@@ -200,13 +185,10 @@
   gap: 32px;
   align-items: center;
   justify-content: flex-start;
-  width: 1210.08px;
-  height: 13.54%;
   position: absolute;
   left: 50%;
   translate: -50%;
-  bottom: 38.96%;
-  top: 47.5%;
+  top: 935.19px;
 }
 .elevavidrios {
   color: #ffffff;
@@ -215,7 +197,7 @@
   font-size: 58px;
   font-weight: 600;
   position: relative;
-  align-self: stretch;
+  width: 324px;
   height: 134px;
 }
 .audio {
@@ -244,13 +226,9 @@
   gap: 32px;
   align-items: center;
   justify-content: flex-start;
-  width: 1210.08px;
-  height: 13.54%;
   position: absolute;
-  left: 50%;
-  translate: -50%;
-  bottom: 22.5%;
-  top: 63.96%;
+  left: calc(50% - 420.48px);
+  top: 1303px;
 }
 .general {
   color: #ffffff;
@@ -259,21 +237,8 @@
   font-size: 58px;
   font-weight: 600;
   position: relative;
-  align-self: stretch;
+  width: 291.04px;
   height: 134px;
-}
-.frame-140 {
-  display: flex;
-  flex-direction: row;
-  gap: 32px;
-  align-items: center;
-  justify-content: flex-start;
-  width: 395px;
-  height: 13.54%;
-  position: absolute;
-  left: calc(50% - 161px);
-  bottom: 22.2%;
-  top: 64.26%;
 }
 .clientes {
   color: #ffffff;
@@ -285,3 +250,47 @@
   align-self: stretch;
   height: 134px;
 }
+
+/* Botón de acción: Agregar / Modificar */
+.boton-accion {
+  background-color: #ff335f;
+  color: white;
+  border: none;
+  border-radius: 16px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+/* Hover */
+.boton-accion:hover {
+  background-color: #ff335f;
+  transform: translateY(-2px);
+}
+
+/* Botón volver */
+.boton-volver {
+  background-color: #ff335f;
+  color: white;
+  border: 2px solid #ff335f;
+  border-radius: 16px;
+  padding: 10px 22px;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: center;
+}
+
+/* Hover volver */
+.boton-volver:hover {
+  background-color: #ff335f;
+  color: white;
+}
+
+

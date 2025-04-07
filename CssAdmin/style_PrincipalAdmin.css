@@ -568,3 +568,27 @@
 .boton-categoria:hover .texto-boton {
   color: #ff335f;
 }
+/* Botón: Conoce los últimos movimientos */
+.boton-accion.ultimos-movimientos {
+  all: unset;
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px 30px;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  color: #ffffff;
+  cursor: pointer;
+  height: 76px;
+  width: 580px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+  margin-top: 20px; /* Puedes ajustar según tu diseño */
+}
+
+.boton-accion.ultimos-movimientos:hover {
+  background-color: #e02952;
+}

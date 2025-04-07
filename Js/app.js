@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const links = document.querySelectorAll(".nav-link");
     const botonesCategoria = document.querySelectorAll(".boton-categoria");
 
-    // Función para cargar contenido dinámico
     function cargarPagina(url, agregarHistorial = true) {
         fetch(`./${url}`)
             .then(response => response.text())
@@ -17,16 +16,28 @@ document.addEventListener("DOMContentLoaded", function () {
                     history.pushState({ page: url }, "", `#${url}`);
                 }
                 if (url === "PrincipalAdmin.html") {
-                    agregarEventosInicio(); // agrega los eventos de la pagina de inicio
+                    agregarEventosInicio();
+                    verificarUltimosMovimientos();
                 }
                 if (url === "Desicion.html") {
                     agregarEventosCategoriaParqueo();
+                }
+                if (url === "MovimientosRecientes.html") {
+                    agregarEventosCategoriaParqueo();
+                }
+                if (url === "Agregar.html") {
+                    volverDesicion();
+                }
+                if (url === "Modificar.html") {
+                    volverDesicion();
+                }
+                if (url === "Eliminar.html") {
+                    volverDesicion();
                 }
             })
             .catch(error => console.error("Error al cargar la página:", error));
     }
 
-    // Manejar clics en los enlaces de navegación
     links.forEach(link => {
         link.addEventListener("click", function (event) {
             event.preventDefault();
@@ -37,30 +48,37 @@ document.addEventListener("DOMContentLoaded", function () {
     // Manejar clics en los botones de categorías
     function agregarEventosInicio() {
         const botonesCategoria = document.querySelectorAll(".boton-categoria");
-        const tituloSeccion = document.querySelector(".seccion-nombre"); // << AQUÍ estaba el error, faltaba esta línea
+        const tituloSeccion = document.querySelector(".seccion-nombre"); 
     
         botonesCategoria.forEach(boton => {
             boton.addEventListener("click", function () {
                 const tipo = this.getAttribute("data-tipo");
     
                 if (tipo && tituloSeccion) {
-                    // Formatear el tipo bonito
                     const formateado = tipo
                         .replace(/_/g, " ")
                         .replace(/\b\w/g, l => l.toUpperCase());
     
-                    // Cambiar el texto de la sección
                     tituloSeccion.textContent = `Accesorios de ${formateado}`;
                 }
     
-                // Luego de cambiar el texto, ir a la otra página
                 const pagina = `Desicion.html`;
                 cargarPagina(pagina);
             });
         });
     }
     
-    // Función para agregar eventos y accesorios en categoria_parqueo.html se uso json de prueba
+    function verificarUltimosMovimientos() {
+        const botonAgregar = document.querySelector('button[data-tipo="movimientos"]');
+        
+        if (botonAgregar) {
+            botonAgregar.addEventListener("click", () => {
+                cargarPagina("MovimientosRecientes.html");
+            });
+        }
+        
+    }
+    
     function agregarEventosCategoriaParqueo() {
         const botonAgregar = document.querySelector('button[data-tipo="agregar"]');
         const botonEliminar = document.querySelector('button[data-tipo="eliminar"]');
@@ -89,7 +107,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Manejar el botón de atrás/adelante del navegador
+    function volverDesicion() {
+        const botonVolver = document.querySelector('button[data-tipo="volver');
+
+        if (botonVolver) {
+            botonVolver.addEventListener("click", () => {
+                cargarPagina("Desicion.html");
+            });
+        }
+    }
+
     window.onpopstate = function (event) {
         if (event.state && event.state.page) {
             cargarPagina(event.state.page, false);
