@@ -1,0 +1,287 @@
+.pag-accesorios-agregar-admin,
+.pag-accesorios-agregar-admin * {
+  box-sizing: border-box;
+}
+.pag-accesorios-agregar-admin {
+  background: #191919;
+  height: 1969px;
+  position: relative;
+  overflow: hidden;
+}
+.movimientos {
+  color: #ff335f;
+  text-align: left;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 67px;
+  font-weight: 600;
+  position: absolute;
+  left: calc(50% - 474px);
+  bottom: 70.8%;
+  top: 17.32%;
+  height: 11.88%;
+  width: 1148px;
+}
+.buscar-item {
+  color: #191919;
+  text-align: center;
+  font-family: "Poppins-SemiBold", sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  position: absolute;
+  right: 51.3%;
+  left: 34.53%;
+  width: 14.17%;
+  bottom: 28.31%;
+  top: 69.78%;
+  height: 1.91%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.frame-132 {
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  width: 205px;
+  height: 3.21%;
+  position: absolute;
+  left: calc(50% - 605px);
+  bottom: 7.96%;
+  top: 88.83%;
+}
+.volver {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  position: relative;
+}
+.frame-137 {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: flex-start;
+  height: 16.2%;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  bottom: 54.99%;
+  top: 28.81%;
+}
+.frame-134 {
+  background: #2c2c2c;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 404px;
+  height: 304px;
+  position: relative;
+}
+.luces-led {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.frame-125 {
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 272px;
+  height: 76px;
+  position: relative;
+}
+.agregar {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  position: relative;
+}
+.frame-135 {
+  background: #2c2c2c;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 371.04px;
+  position: relative;
+}
+.internos {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.frame-126 {
+  background: #ff335f;
+  border-radius: 17px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 217px;
+  position: relative;
+}
+.eliminar {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  position: relative;
+}
+.frame-136 {
+  background: #2c2c2c;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 371.04px;
+  position: relative;
+  overflow: hidden;
+}
+.externos {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.modificar {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Poppins-Regular", sans-serif;
+  font-size: 35px;
+  font-weight: 400;
+  position: relative;
+}
+.frame-138 {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 1210.08px;
+  height: 13.54%;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  bottom: 38.96%;
+  top: 47.5%;
+}
+.elevavidrios {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.audio {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.parqueo {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.frame-139 {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 1210.08px;
+  height: 13.54%;
+  position: absolute;
+  left: 50%;
+  translate: -50%;
+  bottom: 22.5%;
+  top: 63.96%;
+}
+.general {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
+.frame-140 {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: flex-start;
+  width: 395px;
+  height: 13.54%;
+  position: absolute;
+  left: calc(50% - 161px);
+  bottom: 22.2%;
+  top: 64.26%;
+}
+.clientes {
+  color: #ffffff;
+  text-align: center;
+  font-family: "Roboto-SemiBold", sans-serif;
+  font-size: 58px;
+  font-weight: 600;
+  position: relative;
+  align-self: stretch;
+  height: 134px;
+}
