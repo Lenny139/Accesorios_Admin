@@ -1,0 +1,191 @@
+<!-- dashboard.html -->
+<div class="dashboard">
+    <!-- Tarjeta de Bienvenida -->
+    <div class="card fade-in">
+        <h2 class="card-title">
+            <i class="fas fa-user-shield"></i>
+            Bienvenido, <span id="user-role">Administrador</span>
+        </h2>
+        <p>Panel de control principal - Accesorios AUTO-UPB</p>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="stats-grid">
+        <!-- Tarjeta 1: Stock Crítico -->
+        <div class="card stat-card">
+            <div class="stat-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Stock Crítico</h3>
+            </div>
+            <div class="stat-value" id="critical-stock">5</div>
+            <div class="stat-footer">Ítems con menos de 5 unidades</div>
+        </div>
+
+        <!-- Tarjeta 2: Órdenes Pendientes -->
+        <div class="card stat-card">
+            <div class="stat-header">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>Órdenes Pendientes</h3>
+            </div>
+            <div class="stat-value" id="pending-orders">3</div>
+            <div class="stat-footer">Por procesar</div>
+        </div>
+
+        <!-- Tarjeta 3: Ventas Hoy -->
+        <div class="card stat-card">
+            <div class="stat-header">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Ventas Hoy</h3>
+            </div>
+            <div class="stat-value" id="today-sales">$1,240,500</div>
+            <div class="stat-footer">Total acumulado</div>
+        </div>
+
+        <!-- Tarjeta 4: Devoluciones -->
+        <div class="card stat-card">
+            <div class="stat-header">
+                <i class="fas fa-exchange-alt"></i>
+                <h3>Devoluciones</h3>
+            </div>
+            <div class="stat-value" id="returns">2</div>
+            <div class="stat-footer">Solicitudes pendientes</div>
+        </div>
+    </div>
+
+    <!-- Sección de Actividad Reciente -->
+    <div class="card">
+        <h2 class="card-title">
+            <i class="fas fa-history"></i>
+            Actividad Reciente
+        </h2>
+        <div class="activity-list">
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="activity-details">
+                    <p>Actualización de stock - Llantas 18"</p>
+                    <small>Hoy 10:45 AM · Por: Admin</small>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-file-invoice"></i>
+                </div>
+                <div class="activity-details">
+                    <p>Nueva orden #458 - Taller Central</p>
+                    <small>Ayer 3:30 PM · $890,000</small>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="activity-details">
+                    <p>Nuevo cliente registrado</p>
+                    <small>Ayer 11:20 AM · Concesionario Norte</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos específicos para el dashboard */
+    .dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .stat-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+    }
+
+    .stat-header i {
+        font-size: 1.2rem;
+    }
+
+    .stat-header h3 {
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin: 0.5rem 0;
+    }
+
+    .stat-footer {
+        font-size: 0.85rem;
+        color: var(--text-light);
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+    }
+
+    .activity-item:hover {
+        background-color: var(--primary-light);
+    }
+
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .activity-details {
+        flex-grow: 1;
+    }
+
+    .activity-details p {
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .activity-details small {
+        color: var(--text-light);
+        font-size: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
