@@ -59,27 +59,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <!-- Ejemplo de fila con nuevos campos -->
-                <tr>
-                    <td>ACC-205</td>
-                    <td class="item-image"><img src="/uploads/llantas-18.jpg" alt="Llanta 18"></td>
-                    <td>Llanta deportiva 18"</td>
-                    <td>Externos</td>
-                    <td>
-                        <div class="stock-cell">
-                            <span class="stock-value">12</span>
-                            <button class="stock-btn adjust-stock"><i class="fas fa-edit"></i></button>
-                        </div>
-                    </td>
-                    <td>$450,000</td>
-                    <td>5%</td>
-                    <td>Gratis</td>
-                    <td><span class="status-badge active">Activo</span></td>
-                    <td class="actions-cell">
-                        <button class="action-btn edit-btn"><i class="fas fa-edit"></i></button>
-                        <button class="action-btn delete-btn"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
+                <!-- Campo de las filas de la tabla-->
                 </tbody>
             </table>
         </div>
@@ -599,24 +579,35 @@
 
     /* Estilos para additional expenses */
     #additional-expenses-container {
-        margin-left: -0.5rem;
+        margin-left: 0; /* Elimina el margen negativo que tenía */
+        padding: 0.5rem 0; /* Espacio vertical */
+        border: 1px solid var(--border); /* Opcional: borde para contenedor */
+        border-radius: 6px;
+        padding-left: 1rem; /* Alineación con el label */
+        margin-top: 0.5rem; /* Espacio del label */
+        background-color: #f9f9f9; /* Fondo claro opcional */
     }
 
+    /* Estilos para cada opción de gasto */
     .expense-option {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 0.5rem;
+        padding: 0.25rem 0; /* Espacio interno */
     }
 
     .expense-option input[type="checkbox"] {
         margin: 0;
         width: auto;
+        transform: scale(1.2); /* Hace el checkbox un poco más grande */
     }
 
     .expense-option label {
         margin: 0;
         font-weight: normal;
+        color: var(--text); /* Color consistente con otros textos */
+        font-size: 0.95rem; /* Tamaño similar a otros inputs */
     }
 
     @keyframes modalFadeIn {
