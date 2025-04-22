@@ -1,5 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Constantes
+    // Constantes y configuraciones
+    const CONFIG = {
+        apiBaseUrl: "http://localhost:8080",
+        endpoints: {
+            items: "/items/public/page",
+            itemTypes: "/api/itemtypes",
+            discounts: "/api/discounts",
+            additionalExpenses: "/additionalExpenses/getall",
+            itemDetails: "/items/public"
+        }
+    };
+
+    // Elementos del DOM
     const DOM = {
         content: document.getElementById("contenido"),
         navLinks: document.querySelectorAll(".nav-link"),
@@ -49,13 +61,13 @@ document.addEventListener("DOMContentLoaded", function () {
             try {
                 // Mostrar loader
                 DOM.content.innerHTML = `
-                        <div class="card">
-                            <h2 class="card-title">
-                                <i class="fas fa-sync-alt fa-spin"></i>
-                                Cargando...
-                            </h2>
-                        </div>
-                    `;
+                    <div class="card">
+                        <h2 class="card-title">
+                            <i class="fas fa-sync-alt fa-spin"></i>
+                            Cargando...
+                        </h2>
+                    </div>
+                `;
 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error("Failed to load page");
@@ -66,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 DOM.content.firstElementChild.classList.add("fade-in");
 
                 if (url === "items.html") {
-                    initItemsScript();
+                    ItemsManager.init();
                 }
 
                 if (addToHistory) {
@@ -76,14 +88,14 @@ document.addEventListener("DOMContentLoaded", function () {
             } catch (error) {
                 console.error("Error loading page:", error);
                 DOM.content.innerHTML = `
-                        <div class="card fade-in">
-                            <h2 class="card-title">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Error al cargar la página
-                            </h2>
-                            <p>${error.message}</p>
-                        </div>
-                    `;
+                    <div class="card fade-in">
+                        <h2 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Error al cargar la página
+                        </h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
             }
         },
 
@@ -98,44 +110,76 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
     };
-    function initItemsScript() {
-        const addItemBtn = document.getElementById('add-item-btn');
-        const itemModal = document.getElementById('item-modal');
-        const stockModal = document.getElementById('stock-modal');
-        const closeModals = document.querySelectorAll('.close-modal, .cancel-btn');
-        const itemsTable = document.getElementById('items-table').getElementsByTagName('tbody')[0];
-        const prevPageBtn = document.getElementById('prev-page');
-        const nextPageBtn = document.getElementById('next-page');
-        const pageInfo = document.querySelector('.page-info');
-        const itemSearch = document.getElementById('item-search');
-        const itemTypeFilter = document.getElementById('item-type-filter');
-        const stockFilter = document.getElementById('stock-filter');
 
-        if (!addItemBtn) return;
+    // Módulo de Gestión de Items
+    const ItemsManager = {
+        init() {
+            this.cacheElements();
+            this.setupEventListeners();
+            this.loadInitialData();
+        },
 
-        let currentPage = 1;
-        let totalPages = 1;
-        let allItems = [];
+        cacheElements() {
+            this.elements = {
+                addItemBtn: document.getElementById('add-item-btn'),
+                itemModal: document.getElementById('item-modal'),
+                stockModal: document.getElementById('stock-modal'),
+                closeModals: document.querySelectorAll('.close-modal, .cancel-btn'),
+                itemsTable: document.getElementById('items-table')?.getElementsByTagName('tbody')[0],
+                prevPageBtn: document.getElementById('prev-page'),
+                nextPageBtn: document.getElementById('next-page'),
+                pageInfo: document.querySelector('.page-info'),
+                itemSearch: document.getElementById('item-search'),
+                itemTypeFilter: document.getElementById('item-type-filter'),
+                stockFilter: document.getElementById('stock-filter'),
+                hasDiscountSelect: document.getElementById('item-has_discount'),
+                discountSection: document.getElementById('discount-section'),
+                freeShippingSelect: document.getElementById('item-free_shipping'),
+                shippingPriceGroup: document.getElementById('shipping-price-group'),
+                itemForm: document.getElementById('item-form')
+            };
+        },
 
-        const hasDiscountSelect = document.getElementById('item-has_discount');
-        const discountSection = document.getElementById('discount-section');
-        const freeShippingSelect = document.getElementById('item-free_shipping');
-        const shippingPriceGroup = document.getElementById('shipping-price-group');
+        setupEventListeners() {
+            if (!this.elements.addItemBtn) return;
 
-        hasDiscountSelect.addEventListener('change', function () {
-            discountSection.style.display = this.value === 'true' ? 'flex' : 'none';
-            if (this.value === 'true') {
-                loadDiscountOptions();
-            }
-        });
+            // Eventos de filtros y paginación
+            this.elements.prevPageBtn?.addEventListener('click', () => this.handlePagination(-1));
+            this.elements.nextPageBtn?.addEventListener('click', () => this.handlePagination(1));
+            this.elements.itemSearch?.addEventListener('input', () => this.applyFilters());
+            this.elements.itemTypeFilter?.addEventListener('change', () => this.applyFilters());
+            this.elements.stockFilter?.addEventListener('change', () => this.applyFilters());
 
-        freeShippingSelect.addEventListener('change', function () {
-            shippingPriceGroup.style.display = this.value === 'false' ? 'flex' : 'none';
-        });
+            // Eventos de modales
+            this.elements.addItemBtn.addEventListener('click', () => this.showItemModal());
+            this.elements.closeModals.forEach(btn => {
+                btn.addEventListener('click', () => this.closeModals());
+            });
+            window.addEventListener('click', (event) => {
+                if (event.target === this.elements.itemModal) this.elements.itemModal.style.display = 'none';
+                if (event.target === this.elements.stockModal) this.elements.stockModal.style.display = 'none';
+            });
 
-        // Función para cargar los items desde la API
-        function loadItems(page = 1, search = '', type = '', stock = '') {
-            let url = `http://localhost:8080/items/public/page?page=${page}`;
+            // Eventos de formulario
+            this.elements.hasDiscountSelect?.addEventListener('change', () => this.toggleDiscountSection());
+            this.elements.freeShippingSelect?.addEventListener('change', () => this.toggleShippingPrice());
+            document.getElementById('item-image')?.addEventListener('change', (e) => this.handleImagePreview(e));
+            this.elements.itemForm?.addEventListener('submit', (e) => this.handleFormSubmit(e));
+        },
+
+        loadInitialData() {
+            this.currentPage = 1;
+            this.totalPages = 1;
+            this.allItems = [];
+
+            this.loadItems();
+            this.loadItemTypes();
+            this.loadAdditionalExpenses();
+        },
+
+        // Funciones de carga de datos
+        async loadItems(page = 1, search = '', type = '', stock = '') {
+            let url = `${CONFIG.apiBaseUrl}${CONFIG.endpoints.items}?page=${page}`;
 
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (type) url += `&type=${encodeURIComponent(type)}`;
@@ -144,28 +188,114 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (stock === 'out') url += '&minStock=0&maxStock=0';
             }
 
-            fetch(url)
-                .then(res => res.json())
-                .then(data => {
-                    totalPages = data.totalPages;
-                    currentPage = data.currentPage;
-                    allItems = data.items;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
 
-                    updatePagination();
-                    renderItemsTable();
-                })
-                .catch(error => {
-                    console.error('Error loading items:', error);
-                    // Mostrar mensaje de error al usuario
+                this.totalPages = data.totalPages;
+                this.currentPage = data.currentPage;
+                this.allItems = data.items;
+
+                this.updatePagination();
+                this.renderItemsTable();
+            } catch (error) {
+                console.error('Error loading items:', error);
+                this.showNotification('Error al cargar los ítems', 'error');
+            }
+        },
+
+        async loadItemTypes() {
+            try {
+                const response = await fetch(CONFIG.endpoints.itemTypes);
+                const data = await response.json();
+                const select = document.getElementById('item-type');
+
+                select.innerHTML = '<option value="">Seleccionar...</option>';
+                data.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type.id;
+                    option.textContent = type.name;
+                    select.appendChild(option);
                 });
-        }
+            } catch (error) {
+                console.error('Error loading item types:', error);
+                // Cargar tipos por defecto si falla la API
+                const defaultTypes = [
+                    { id: 'PARQ', name: 'Parqueo' },
+                    { id: 'EXT', name: 'Externos' },
+                    { id: 'INTE', name: 'Internos' },
+                    { id: 'LUCES', name: 'Luces-Led' },
+                    { id: 'MOD_ELEVA', name: 'Modulo Elevavidrios' },
+                    { id: 'AUDIO', name: 'Audio' }
+                ];
 
-        // Función para renderizar la tabla con los items
-        function renderItemsTable() {
-            itemsTable.innerHTML = '';
+                const select = document.getElementById('item-type');
+                select.innerHTML = '<option value="">Seleccionar...</option>';
+                defaultTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type.id;
+                    option.textContent = type.name;
+                    select.appendChild(option);
+                });
+            }
+        },
 
-            if (allItems.length === 0) {
-                const row = itemsTable.insertRow();
+        async loadDiscountOptions() {
+            try {
+                const response = await fetch(CONFIG.endpoints.discounts);
+                const data = await response.json();
+                const select = document.getElementById('item-discount');
+
+                select.innerHTML = '<option value="">Seleccionar descuento...</option>';
+                data.forEach(discount => {
+                    const option = document.createElement('option');
+                    option.value = discount.id;
+                    option.textContent = `${discount.name} (${discount.value}${discount.ispercentage ? '%' : ' COP'})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading discounts:', error);
+            }
+        },
+
+        async loadAdditionalExpenses() {
+            try {
+                const response = await fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.additionalExpenses}`);
+                const data = await response.json();
+                const container = document.getElementById('additional-expenses-container');
+
+                container.innerHTML = '';
+                data.forEach(exp => {
+                    const div = document.createElement('div');
+                    div.className = 'expense-option';
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `expense-${exp.id}`;
+                    checkbox.value = exp.id;
+                    checkbox.name = 'additional_expenses';
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `expense-${exp.id}`;
+                    label.textContent = `${exp.name} (+$${exp.expense} COP)`;
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    container.appendChild(div);
+                });
+            } catch (error) {
+                console.error('Error loading additional expenses:', error);
+            }
+        },
+
+        // Funciones de renderizado
+        renderItemsTable() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = '';
+
+            if (this.allItems.length === 0) {
+                const row = this.elements.itemsTable.insertRow();
                 const cell = row.insertCell(0);
                 cell.colSpan = 10;
                 cell.textContent = 'No se encontraron ítems';
@@ -173,8 +303,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            allItems.forEach(item => {
-                const row = itemsTable.insertRow();
+            this.allItems.forEach(item => {
+                const row = this.elements.itemsTable.insertRow();
 
                 // ID
                 row.insertCell(0).textContent = item.id;
@@ -184,7 +314,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 imgCell.className = 'item-image';
                 if (item.imageurl) {
                     const img = document.createElement('img');
-                    img.src = `http://localhost:8080/uploads/${item.imageurl}`;
+                    img.src = `${CONFIG.apiBaseUrl}/uploads/${item.imageurl}`;
                     img.alt = item.name;
                     imgCell.appendChild(img);
                 } else {
@@ -200,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Stock
                 const stockCell = row.insertCell(4);
                 const stockContainer = document.createElement('div');
-                stockContainer.className = 'stock-cell';  // La clase va en el div contenedor
+                stockContainer.className = 'stock-cell';
 
                 const stockValue = document.createElement('span');
                 stockValue.className = 'stock-value';
@@ -210,13 +340,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 const stockBtn = document.createElement('button');
                 stockBtn.className = 'stock-btn adjust-stock';
                 stockBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                stockBtn.addEventListener('click', function() {
+                stockBtn.addEventListener('click', () => {
                     document.getElementById('stock-item-id').value = item.id;
-                    stockModal.style.display = 'flex';
+                    this.elements.stockModal.style.display = 'flex';
                 });
                 stockContainer.appendChild(stockBtn);
 
-                stockCell.appendChild(stockContainer);  // Añadir el contenedor al td
+                stockCell.appendChild(stockContainer);
 
                 // Precio de Venta
                 const priceCell = row.insertCell(5);
@@ -226,14 +356,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     priceCell.textContent = '-';
                 }
 
-                // Descuento (asumiendo que no viene en la API)
+                // Descuento
                 row.insertCell(6).textContent = '0%';
 
                 // Envío
                 const shippingCell = row.insertCell(7);
                 shippingCell.textContent = item.free_shipping ? 'Gratis' : (item.price_shipping ? `$${item.price_shipping}` : '-');
 
-                // Estado (asumiendo activo por defecto)
+                // Estado
                 const statusCell = row.insertCell(8);
                 const statusBadge = document.createElement('span');
                 statusBadge.className = 'status-badge active';
@@ -247,15 +377,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 const editBtn = document.createElement('button');
                 editBtn.className = 'action-btn edit-btn';
                 editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                editBtn.addEventListener('click', function() {
-                    loadItemData(item.id);
-                    itemModal.style.display = 'flex';
+                editBtn.addEventListener('click', () => {
+                    this.loadItemData(item.id);
+                    this.elements.itemModal.style.display = 'flex';
                 });
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'action-btn delete-btn';
                 deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                deleteBtn.addEventListener('click', function() {
+                deleteBtn.addEventListener('click', () => {
                     if (confirm(`¿Estás seguro de eliminar el ítem ${item.name}?`)) {
                         // Lógica para eliminar el ítem
                     }
@@ -264,216 +394,134 @@ document.addEventListener("DOMContentLoaded", function () {
                 actionsCell.appendChild(editBtn);
                 actionsCell.appendChild(deleteBtn);
             });
-        }
+        },
 
-        // Función para actualizar la paginación
-        function updatePagination() {
-            pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
-            prevPageBtn.disabled = currentPage <= 1;
-            nextPageBtn.disabled = currentPage >= totalPages;
-        }
+        updatePagination() {
+            if (!this.elements.pageInfo) return;
 
-        // Event listeners para paginación
-        prevPageBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                loadItems(currentPage - 1, itemSearch.value, itemTypeFilter.value, stockFilter.value);
-            }
-        });
+            this.elements.pageInfo.textContent = `Página ${this.currentPage} de ${this.totalPages}`;
+            if (this.elements.prevPageBtn) this.elements.prevPageBtn.disabled = this.currentPage <= 1;
+            if (this.elements.nextPageBtn) this.elements.nextPageBtn.disabled = this.currentPage >= this.totalPages;
+        },
 
-        nextPageBtn.addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                loadItems(currentPage + 1, itemSearch.value, itemTypeFilter.value, stockFilter.value);
-            }
-        });
-
-        // Event listeners para filtros
-        itemSearch.addEventListener('input', () => {
-            loadItems(1, itemSearch.value, itemTypeFilter.value, stockFilter.value);
-        });
-
-        itemTypeFilter.addEventListener('change', () => {
-            loadItems(1, itemSearch.value, itemTypeFilter.value, stockFilter.value);
-        });
-
-        stockFilter.addEventListener('change', () => {
-            loadItems(1, itemSearch.value, itemTypeFilter.value, stockFilter.value);
-        });
-
-        // Abrir modal para nuevo ítem
-        addItemBtn.addEventListener('click', () => {
+        // Funciones de UI
+        showItemModal() {
             document.getElementById('modal-title').textContent = 'Nuevo Ítem';
             document.getElementById('item-form').reset();
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('item-id').value = '';
-            discountSection.style.display = 'none';
-            shippingPriceGroup.style.display = 'none';
-            itemModal.style.display = 'flex';
-        });
+            this.elements.discountSection.style.display = 'none';
+            this.elements.shippingPriceGroup.style.display = 'none';
+            this.elements.itemModal.style.display = 'flex';
+        },
 
-        // Cerrar modales
-        closeModals.forEach(btn => {
-            btn.addEventListener('click', function () {
-                itemModal.style.display = 'none';
-                stockModal.style.display = 'none';
-            });
-        });
+        closeModals() {
+            this.elements.itemModal.style.display = 'none';
+            this.elements.stockModal.style.display = 'none';
+        },
 
-        window.addEventListener('click', function (event) {
-            if (event.target === itemModal) itemModal.style.display = 'none';
-            if (event.target === stockModal) stockModal.style.display = 'none';
-        });
+        toggleDiscountSection() {
+            const show = this.elements.hasDiscountSelect.value === 'true';
+            this.elements.discountSection.style.display = show ? 'flex' : 'none';
+            if (show) this.loadDiscountOptions();
+        },
 
-        // Imagen preview
-        document.getElementById('item-image').addEventListener('change', function (e) {
-            const file = e.target.files[0];
+        toggleShippingPrice() {
+            this.elements.shippingPriceGroup.style.display =
+                this.elements.freeShippingSelect.value === 'false' ? 'flex' : 'none';
+        },
+
+        handleImagePreview(event) {
+            const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function (event) {
-                    document.getElementById('image-preview').innerHTML = `<img src="${event.target.result}" alt="Preview">`;
+                reader.onload = function(e) {
+                    document.getElementById('image-preview').innerHTML = `<img src="${e.target.result}" alt="Preview">`;
                 };
                 reader.readAsDataURL(file);
             }
-        });
+        },
 
-        // Cargar tipos de ítems
-        function loadItemTypes() {
-            fetch('/api/itemtypes')
-                .then(res => res.json())
-                .then(data => {
-                    const select = document.getElementById('item-type');
-                    select.innerHTML = '<option value="">Seleccionar...</option>';
-                    data.forEach(type => {
-                        const option = document.createElement('option');
-                        option.value = type.id;
-                        option.textContent = type.name;
-                        select.appendChild(option);
+        // Funciones de manejo de eventos
+        handlePagination(direction) {
+            const newPage = this.currentPage + direction;
+            if (newPage > 0 && newPage <= this.totalPages) {
+                this.loadItems(
+                    newPage,
+                    this.elements.itemSearch?.value,
+                    this.elements.itemTypeFilter?.value,
+                    this.elements.stockFilter?.value
+                );
+            }
+        },
+
+        applyFilters() {
+            this.loadItems(
+                1,
+                this.elements.itemSearch?.value,
+                this.elements.itemTypeFilter?.value,
+                this.elements.stockFilter?.value
+            );
+        },
+
+        async loadItemData(itemId) {
+            try {
+                // Cargar datos básicos del ítem
+                const [itemResponse, gastosResponse] = await Promise.all([
+                    fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.itemDetails}/${itemId}`),
+                    fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.itemDetails}/${itemId}/gastos-adicionales`)
+                ]);
+
+                const [item, gastosItem] = await Promise.all([
+                    itemResponse.json(),
+                    gastosResponse.json()
+                ]);
+
+                // Llenar formulario
+                document.getElementById('modal-title').textContent = 'Editar Ítem';
+                document.getElementById('item-id').value = item.id;
+                document.getElementById('item-name').value = item.name;
+                document.getElementById('item-type').value = item.itemtype?.id || '';
+                document.getElementById('item-stock').value = item.stock;
+                document.getElementById('item-purchaseprice').value = item.purchaseprice || '';
+                document.getElementById('item-sellingprice').value = item.sellingprice || '';
+                document.getElementById('item-description').value = item.description;
+                document.getElementById('item-state').value = item.itemstate || 'true';
+
+                document.getElementById('item-free_shipping').value = item.free_shipping ? 'true' : 'false';
+                document.getElementById('item-price_shipping').value = item.price_shipping || '0.0';
+                this.toggleShippingPrice();
+
+                document.getElementById('item-has_discount').value = item.has_discount ? 'true' : 'false';
+                if (item.has_discount) {
+                    this.elements.discountSection.style.display = 'flex';
+                    await this.loadDiscountOptions();
+                    document.getElementById('item-discount').value = item.discount || '';
+                }
+
+                if (item.imageurl) {
+                    document.getElementById('image-preview').innerHTML =
+                        `<img src="${CONFIG.apiBaseUrl}/uploads/${item.imageurl}" alt="Preview">`;
+                }
+
+                // Cargar y marcar gastos adicionales
+                await this.loadAdditionalExpenses();
+                if (gastosItem && gastosItem.length > 0) {
+                    gastosItem.forEach(gasto => {
+                        const checkbox = document.getElementById(`expense-${gasto.id}`);
+                        if (checkbox) checkbox.checked = true;
                     });
-                })
-                .catch(() => {
-                    const defaultTypes = [
-                        { id: 'PARQ', name: 'Parqueo' },
-                        { id: 'EXT', name: 'Externos' },
-                        { id: 'INTE', name: 'Internos' },
-                        { id: 'LUCES', name: 'Luces-Led' },
-                        { id: 'MOD_ELEVA', name: 'Modulo Elevavidrios' },
-                        { id: 'AUDIO', name: 'Audio' }
-                    ];
-                    const select = document.getElementById('item-type');
-                    select.innerHTML = '<option value="">Seleccionar...</option>';
-                    defaultTypes.forEach(type => {
-                        const option = document.createElement('option');
-                        option.value = type.id;
-                        option.textContent = type.name;
-                        select.appendChild(option);
-                    });
-                });
-        }
+                }
 
-        function loadDiscountOptions() {
-            return fetch('/api/discounts')
-                .then(res => res.json())
-                .then(data => {
-                    const select = document.getElementById('item-discount');
-                    select.innerHTML = '<option value="">Seleccionar descuento...</option>';
-                    data.forEach(discount => {
-                        const option = document.createElement('option');
-                        option.value = discount.id;
-                        option.textContent = `${discount.name} (${discount.value}${discount.ispercentage ? '%' : ' COP'})`;
-                        select.appendChild(option);
-                    });
-                });
-        }
+                this.elements.itemModal.style.display = 'flex';
+            } catch (error) {
+                console.error('Error al cargar datos del ítem:', error);
+                this.showNotification('Error al cargar los datos del ítem', 'error');
+            }
+        },
 
-        function loadAdditionalExpenses() {
-            return fetch('http://localhost:8080/additionalExpenses/getall')
-                .then(res => res.json())
-                .then(data => {
-                    const container = document.getElementById('additional-expenses-container');
-                    container.innerHTML = '';
-                    data.forEach(exp => {
-                        const div = document.createElement('div');
-                        div.className = 'expense-option';
-
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.id = `expense-${exp.id}`;
-                        checkbox.value = exp.id;
-                        checkbox.name = 'additional_expenses';
-
-                        const label = document.createElement('label');
-                        label.htmlFor = `expense-${exp.id}`;
-                        label.textContent = `${exp.name} (+$${exp.expense} COP)`;
-
-                        div.appendChild(checkbox);
-                        div.appendChild(label);
-                        container.appendChild(div);
-                    });
-                    return data; // Devuelve los datos para poder usarlos luego si es necesario
-                });
-        }
-
-        function loadItemData(itemId) {
-            // Cargar datos básicos del ítem
-            fetch(`http://localhost:8080/items/public/${itemId}`)
-                .then(res => res.json())
-                .then(item => {
-                    document.getElementById('modal-title').textContent = 'Editar Ítem';
-                    document.getElementById('item-id').value = item.id;
-                    document.getElementById('item-name').value = item.name;
-                    document.getElementById('item-type').value = item.itemtype?.id || '';
-                    document.getElementById('item-stock').value = item.stock;
-                    document.getElementById('item-purchaseprice').value = item.purchaseprice || '';
-                    document.getElementById('item-sellingprice').value = item.sellingprice || '';
-                    document.getElementById('item-description').value = item.description;
-                    document.getElementById('item-state').value = item.itemstate || 'true';
-
-                    document.getElementById('item-free_shipping').value = item.free_shipping ? 'true' : 'false';
-                    document.getElementById('item-price_shipping').value = item.price_shipping || '0.0';
-                    shippingPriceGroup.style.display = item.free_shipping ? 'none' : 'flex';
-
-                    document.getElementById('item-has_discount').value = item.has_discount ? 'true' : 'false';
-                    if (item.has_discount) {
-                        discountSection.style.display = 'flex';
-                        loadDiscountOptions().then(() => {
-                            document.getElementById('item-discount').value = item.discount || '';
-                        });
-                    }
-
-                    if (item.imageurl) {
-                        document.getElementById('image-preview').innerHTML =
-                            `<img src="http://localhost:8080/uploads/${item.imageurl}" alt="Preview">`;
-                    }
-
-                    // Cargar gastos adicionales del ítem
-                    return fetch(`http://localhost:8080/items/public/${itemId}/gastos-adicionales`)
-                        .then(res => res.json())
-                        .then(gastosItem => {
-                            // Cargar todos los gastos disponibles
-                            return loadAdditionalExpenses().then(() => {
-                                // Marcar los checkboxes de los gastos que ya tiene el ítem
-                                if (gastosItem && gastosItem.length > 0) {
-                                    gastosItem.forEach(gasto => {
-                                        const checkbox = document.getElementById(`expense-${gasto.id}`);
-                                        if (checkbox) {
-                                            checkbox.checked = true;
-                                        }
-                                    });
-                                }
-                                return item; // Para mantener el item disponible en la cadena de promesas
-                            });
-                        });
-                })
-                .then(item => {
-                    itemModal.style.display = 'flex';
-                })
-                .catch(error => {
-                    console.error('Error al cargar datos del ítem:', error);
-                    alert('Error al cargar los datos del ítem');
-                });
-        }
-
-        document.getElementById('item-form').addEventListener('submit', function (e) {
-            e.preventDefault();
+        async handleFormSubmit(event) {
+            event.preventDefault();
 
             // Validar campos obligatorios
             const name = document.getElementById('item-name').value;
@@ -484,12 +532,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const imageFile = document.getElementById('item-image').files[0];
 
             if (!name || !type || !stock || !purchaseprice || !sellingprice) {
-                showNotification('Por favor complete todos los campos obligatorios', 'error');
+                this.showNotification('Por favor complete todos los campos obligatorios', 'error');
                 return;
             }
 
-            if (!imageFile) {
-                showNotification('Por favor seleccione una imagen para el ítem', 'error');
+            if (!imageFile && !document.getElementById('item-id').value) {
+                this.showNotification('Por favor seleccione una imagen para el ítem', 'error');
                 return;
             }
 
@@ -501,17 +549,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 sellingprice: parseFloat(sellingprice),
                 purchaseprice: parseFloat(purchaseprice),
                 itemstate: document.getElementById('item-state').value === 'true',
-                itemtype: { id: type, name: document.getElementById('item-type').options[document.getElementById('item-type').selectedIndex].text },
+                itemtype: {
+                    id: type,
+                    name: document.getElementById('item-type').options[document.getElementById('item-type').selectedIndex].text
+                },
                 free_shipping: document.getElementById('item-free_shipping').value === 'true',
                 price_shipping: parseFloat(document.getElementById('item-price_shipping').value) || 0.0,
-                additionalExpenseIds: Array.from(document.querySelectorAll('input[name="additional_expenses"]:checked')).map(cb => parseInt(cb.value)),
-                discountId: document.getElementById('item-discount').value ? parseInt(document.getElementById('item-discount').value) : null
+                additionalExpenseIds: Array.from(document.querySelectorAll('input[name="additional_expenses"]:checked'))
+                    .map(cb => parseInt(cb.value)),
+                discountId: document.getElementById('item-discount').value ?
+                    parseInt(document.getElementById('item-discount').value) : null
             };
 
             // Crear FormData para enviar imagen y JSON
             const formData = new FormData();
             formData.append('item', JSON.stringify(itemData));
-            formData.append('image', imageFile);
+            if (imageFile) formData.append('image', imageFile);
 
             // Mostrar carga
             const saveBtn = document.querySelector('#item-form .save-btn');
@@ -519,34 +572,39 @@ document.addEventListener("DOMContentLoaded", function () {
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
             saveBtn.disabled = true;
 
-            fetch('http://localhost:8080/items/add', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => { throw err; });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    showNotification('Ítem guardado con éxito');
-                    itemModal.style.display = 'none';
-                    loadItems(currentPage, itemSearch.value, itemTypeFilter.value, stockFilter.value);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    const errorMsg = error.message || 'Error al guardar el ítem';
-                    showNotification(errorMsg, 'error');
-                })
-                .finally(() => {
-                    saveBtn.textContent = originalBtnText;
-                    saveBtn.disabled = false;
-                });
-        });
+            try {
+                const itemId = document.getElementById('item-id').value;
+                const url = itemId ?
+                    `${CONFIG.apiBaseUrl}/items/update/${itemId}` :
+                    `${CONFIG.apiBaseUrl}/items/add`;
+                const method = itemId ? 'PUT' : 'POST';
 
-        // Función para mostrar notificaciones
-        function showNotification(message, type = 'success') {
+                const response = await fetch(url, { method, body: formData });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al guardar el ítem');
+                }
+
+                const data = await response.json();
+                this.showNotification('Ítem guardado con éxito');
+                this.elements.itemModal.style.display = 'none';
+                this.loadItems(
+                    this.currentPage,
+                    this.elements.itemSearch?.value,
+                    this.elements.itemTypeFilter?.value,
+                    this.elements.stockFilter?.value
+                );
+            } catch (error) {
+                console.error('Error:', error);
+                this.showNotification(error.message || 'Error al guardar el ítem', 'error');
+            } finally {
+                saveBtn.textContent = originalBtnText;
+                saveBtn.disabled = false;
+            }
+        },
+
+        showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const notificationMessage = document.getElementById('notification-message');
             const notificationIcon = notification.querySelector('.notification-icon i');
@@ -580,12 +638,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 notification.classList.remove('visible');
             }, 3000);
         }
+    };
 
-        // Carga inicial
-        loadItems();
-        loadItemTypes();
-        loadAdditionalExpenses();
-    }
-    // Inicializar
+    // Inicialización
     NavigationManager.init();
 });
