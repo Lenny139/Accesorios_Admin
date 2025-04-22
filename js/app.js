@@ -475,73 +475,111 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('item-form').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const formData = {
-                id: document.getElementById('item-id').value,
-                name: document.getElementById('item-name').value,
-                type: document.getElementById('item-type').value,
-                stock: document.getElementById('item-stock').value,
-                purchaseprice: document.getElementById('item-purchaseprice').value,
-                sellingprice: document.getElementById('item-sellingprice').value,
+            // Validar campos obligatorios
+            const name = document.getElementById('item-name').value;
+            const type = document.getElementById('item-type').value;
+            const stock = document.getElementById('item-stock').value;
+            const purchaseprice = document.getElementById('item-purchaseprice').value;
+            const sellingprice = document.getElementById('item-sellingprice').value;
+            const imageFile = document.getElementById('item-image').files[0];
+
+            if (!name || !type || !stock || !purchaseprice || !sellingprice) {
+                showNotification('Por favor complete todos los campos obligatorios', 'error');
+                return;
+            }
+
+            if (!imageFile) {
+                showNotification('Por favor seleccione una imagen para el ítem', 'error');
+                return;
+            }
+
+            // Construir objeto item
+            const itemData = {
+                name: name,
                 description: document.getElementById('item-description').value,
-                itemstate: document.getElementById('item-state').value,
+                stock: parseInt(stock),
+                sellingprice: parseFloat(sellingprice),
+                purchaseprice: parseFloat(purchaseprice),
+                itemstate: document.getElementById('item-state').value === 'true',
+                itemtype: { id: type, name: document.getElementById('item-type').options[document.getElementById('item-type').selectedIndex].text },
                 free_shipping: document.getElementById('item-free_shipping').value === 'true',
-                price_shipping: document.getElementById('item-price_shipping').value,
-                has_discount: document.getElementById('item-has_discount').value === 'true',
-                discount: document.getElementById('item-discount').value,
-                additional_expenses: Array.from(document.querySelectorAll('input[name="additional_expenses"]:checked')).map(cb => cb.value)
+                price_shipping: parseFloat(document.getElementById('item-price_shipping').value) || 0.0,
+                additionalExpenseIds: Array.from(document.querySelectorAll('input[name="additional_expenses"]:checked')).map(cb => parseInt(cb.value)),
+                discountId: document.getElementById('item-discount').value ? parseInt(document.getElementById('item-discount').value) : null
             };
 
-            const isNew = !formData.id;
-            const url = isNew ? 'http://localhost:8080/items/create' : `http://localhost:8080/items/update/${formData.id}`;
-            const method = isNew ? 'POST' : 'PUT';
+            // Crear FormData para enviar imagen y JSON
+            const formData = new FormData();
+            formData.append('item', JSON.stringify(itemData));
+            formData.append('image', imageFile);
 
-            fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
+            // Mostrar carga
+            const saveBtn = document.querySelector('#item-form .save-btn');
+            const originalBtnText = saveBtn.textContent;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            saveBtn.disabled = true;
+
+            fetch('http://localhost:8080/items/add', {
+                method: 'POST',
+                body: formData
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    alert(isNew ? 'Ítem creado exitosamente' : 'Ítem actualizado exitosamente');
+                    showNotification('Ítem guardado con éxito');
                     itemModal.style.display = 'none';
                     loadItems(currentPage, itemSearch.value, itemTypeFilter.value, stockFilter.value);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error al guardar el ítem');
-                });
-        });
-
-        document.getElementById('stock-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const adjustment = {
-                itemId: document.getElementById('stock-item-id').value,
-                action: document.getElementById('stock-action').value,
-                amount: document.getElementById('stock-amount').value,
-                reason: document.getElementById('stock-reason').value
-            };
-
-            fetch('http://localhost:8080/items/adjust-stock', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(adjustment)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Stock actualizado exitosamente');
-                    stockModal.style.display = 'none';
-                    loadItems(currentPage, itemSearch.value, itemTypeFilter.value, stockFilter.value);
+                    const errorMsg = error.message || 'Error al guardar el ítem';
+                    showNotification(errorMsg, 'error');
                 })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al actualizar el stock');
+                .finally(() => {
+                    saveBtn.textContent = originalBtnText;
+                    saveBtn.disabled = false;
                 });
         });
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationIcon = notification.querySelector('.notification-icon i');
+            const progress = notification.querySelector('.notification-progress');
+
+            // Configurar según el tipo
+            notification.className = 'cart-notification';
+            notification.classList.add(type);
+            notification.classList.add('visible');
+
+            // Cambiar ícono según el tipo
+            if (type === 'success') {
+                notificationIcon.className = 'fas fa-check-circle';
+            } else if (type === 'error') {
+                notificationIcon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                notificationIcon.className = 'fas fa-exclamation-triangle';
+            } else {
+                notificationIcon.className = 'fas fa-info-circle';
+            }
+
+            notificationMessage.textContent = message;
+
+            // Reiniciar animación de progreso
+            progress.style.animation = 'none';
+            void progress.offsetWidth; // Trigger reflow
+            progress.style.animation = 'progress 3s linear';
+
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                notification.classList.remove('visible');
+            }, 3000);
+        }
 
         // Carga inicial
         loadItems();

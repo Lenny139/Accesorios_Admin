@@ -99,7 +99,6 @@
                         <label for="item-type">Tipo *</label>
                         <select id="item-type" required>
                             <option value="">Seleccionar...</option>
-                            <!-- Opciones se llenarán dinámicamente desde tu API -->
                         </select>
                     </div>
                 </div>
@@ -112,13 +111,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="item-purchaseprice">Precio de Compra</label>
-                        <input type="number" id="item-purchaseprice" min="0" step="0.01">
+                        <label for="item-purchaseprice">Precio de compra</label>
+                        <input type="number" id="item-purchaseprice" min="0" step="0.01" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="item-sellingprice">Precio de Venta</label>
-                        <input type="number" id="item-sellingprice" min="0" step="0.01">
+                        <label for="item-sellingprice">Precio de venta</label>
+                        <input type="number" id="item-sellingprice" min="0" step="0.01" required>
                     </div>
                 </div>
 
@@ -127,8 +126,8 @@
                     <div class="form-group">
                         <label for="item-free_shipping">Envío Gratis</label>
                         <select id="item-free_shipping">
-                            <option value="false">No</option>
                             <option value="true">Sí</option>
+                            <option value="false">No</option>
                         </select>
                     </div>
 
@@ -173,7 +172,7 @@
 
                 <div class="form-group">
                     <label for="item-image">Imagen</label>
-                    <input type="file" id="item-image" accept="image/*">
+                    <input type="file" id="item-image" accept="image/*" required>
                     <small class="text-muted">Tamaño máximo: 2MB</small>
                     <div class="image-preview" id="image-preview"></div>
                 </div>
@@ -235,7 +234,24 @@
     </div>
 </div>
 
+<div id="notification" class="cart-notification">
+    <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="notification-content">
+        <h4>Éxito</h4>
+        <p id="notification-message">Item guardado con éxito</p>
+    </div>
+    <div class="notification-progress"></div>
+</div>
+
 <style>
+    :root {
+        --notification-color: #4CAF50;
+        --notification-error: #F44336;
+        --notification-warning: #FF9800;
+        --notification-info: #2196F3;
+    }
     /* Estilos específicos para la gestión de ítems */
     .items-management {
         display: flex;
@@ -613,6 +629,103 @@
     @keyframes modalFadeIn {
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* style de la notificacion*/
+
+    .cart-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        color: var(--text);
+        padding: 15px 25px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        opacity: 0;
+        transform: translateX(120%);
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 1000;
+        border-left: 4px solid var(--notification-color);
+    }
+
+    .cart-notification.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .notification-icon i {
+        font-size: 1.5rem;
+        color: var(--notification-color);
+    }
+
+    .notification-content h4 {
+        margin: 0 0 5px 0;
+        font-size: 1rem;
+        color: var(--notification-color);
+    }
+
+    .notification-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text);
+    }
+
+    .notification-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: var(--notification-color);
+        width: 100%;
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    @keyframes progress {
+        to { transform: scaleX(1); }
+    }
+
+    .cart-notification.error {
+        border-left-color: var(--notification-error);
+    }
+
+    .cart-notification.error .notification-icon i,
+    .cart-notification.error .notification-content h4 {
+        color: var(--notification-error);
+    }
+
+    .cart-notification.error .notification-progress {
+        background: var(--notification-error);
+    }
+
+    .cart-notification.warning {
+        border-left-color: var(--notification-warning);
+    }
+
+    .cart-notification.warning .notification-icon i,
+    .cart-notification.warning .notification-content h4 {
+        color: var(--notification-warning);
+    }
+
+    .cart-notification.warning .notification-progress {
+        background: var(--notification-warning);
+    }
+
+    .cart-notification.info {
+        border-left-color: var(--notification-info);
+    }
+
+    .cart-notification.info .notification-icon i,
+    .cart-notification.info .notification-content h4 {
+        color: var(--notification-info);
+    }
+
+    .cart-notification.info .notification-progress {
+        background: var(--notification-info);
     }
 
     @media (max-width: 768px) {
