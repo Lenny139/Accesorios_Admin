@@ -639,7 +639,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 3000);
         }
     };
-
     // Inicialización
     NavigationManager.init();
 });
