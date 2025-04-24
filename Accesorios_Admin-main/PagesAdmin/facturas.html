@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facturas - Accesorios AUTO-UPB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos heredados del panel principal */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #e6e9ff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --danger: #ff4757;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .content {
+            padding: 2rem;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Estilos específicos para facturas */
+        .invoices-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .invoices-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a56d4;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #e84118;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: var(--bg);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-primary {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn:hover:not(.active) {
+            background-color: var(--bg);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-bar input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator.pending i {
+            color: var(--warning);
+        }
+
+        .status-indicator.paid i {
+            color: var(--success);
+        }
+
+        .status-indicator.overdue i {
+            color: var(--danger);
+        }
+
+        .status-indicator.partial i {
+            color: var(--info);
+        }
+
+        .status-indicator.canceled i {
+            color: var(--text-light);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .payment-method.cash i {
+            color: var(--success);
+        }
+
+        .payment-method.card i {
+            color: var(--primary);
+        }
+
+        .payment-method.transfer i {
+            color: var(--info);
+        }
+
+        @media (max-width: 768px) {
+            .invoices-filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+
+            .invoices-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-bar {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenido principal que se cargará en el área de contenido del panel -->
+    <div class="content">
+        <div class="card fade-in">
+            <div class="invoices-header">
+                <h2 class="card-title">
+                    <i class="fas fa-receipt"></i>
+                    Facturas de Accesorios
+                </h2>
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar factura...">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <button class="btn btn-success">
+                    <i class="fas fa-plus"></i> Nueva Factura
+                </button>
+            </div>
+
+            <div class="invoices-filters">
+                <div class="filter-group">
+                    <label for="invoice-status">Estado</label>
+                    <select id="invoice-status">
+                        <option value="all">Todos los estados</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="paid">Pagada</option>
+                        <option value="overdue">Vencida</option>
+                        <option value="partial">Pago parcial</option>
+                        <option value="canceled">Cancelada</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="customer">Cliente</label>
+                    <select id="customer">
+                        <option value="all">Todos los clientes</option>
+                        <option value="1">Juan Martínez</option>
+                        <option value="2">María González</option>
+                        <option value="3">Carlos Rodríguez</option>
+                        <option value="4">Ana López</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date-from">Desde</label>
+                    <input type="date" id="date-from">
+                </div>
+
+                <div class="filter-group">
+                    <label for="date-to">Hasta</label>
+                    <input type="date" id="date-to">
+                </div>
+
+                <div class="filter-group" style="align-self: flex-end;">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>N° Factura</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Método Pago</th>
+                            <th>Estado</th>
+                            <th>Vencimiento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#FAC-2023-105</td>
+                            <td>18/06/2023</td>
+                            <td>Juan Martínez</td>
+                            <td>$1,250.00</td>
+                            <td>
+                                <div class="payment-method card">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Tarjeta</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-indicator paid">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Pagada</span>
+                                </div>
+                            </td>
+                            <td>18/07/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#FAC-2023-104</td>
+                            <td>15/06/2023</td>
+                            <td>María González</td>
+                            <td>$890.50</td>
+                            <td>
+                                <div class="payment-method transfer">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    <span>Transferencia</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-indicator paid">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Pagada</span>
+                                </div>
+                            </td>
+                            <td>15/07/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#FAC-2023-103</td>
+                            <td>12/06/2023</td>
+                            <td>Carlos Rodríguez</td>
+                            <td>$2,150.75</td>
+                            <td>
+                                <div class="payment-method cash">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>Efectivo</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-indicator paid">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Pagada</span>
+                                </div>
+                            </td>
+                            <td>12/07/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#FAC-2023-102</td>
+                            <td>10/06/2023</td>
+                            <td>Ana López</td>
+                            <td>$750.30</td>
+                            <td>
+                                <div class="payment-method card">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span>Tarjeta</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-indicator pending">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Pendiente</span>
+                                </div>
+                            </td>
+                            <td>10/07/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-success">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger">
+                                        <i class="fas fa-ban"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#FAC-2023-101</td>
+                            <td>05/06/2023</td>
+                            <td>Juan Martínez</td>
+                            <td>$1,850.00</td>
+                            <td>
+                                <div class="payment-method transfer">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    <span>Transferencia</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="status-indicator overdue">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>Vencida</span>
+                                </div>
+                            </td>
+                            <td>05/07/2023</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-warning">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="pagination-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script para manejar la interacción con los filtros y la paginación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular cambio de datos al cambiar los filtros
+            document.getElementById('invoice-status').addEventListener('change', function() {
+                console.log('Estado de factura cambiado:', this.value);
+                // Aquí iría la lógica para filtrar las facturas
+            });
+
+            // Simular acción de filtrado
+            document.querySelector('.btn-primary').addEventListener('click', function() {
+                console.log('Aplicando filtros...');
+                // Aquí iría la lógica para aplicar los filtros
+            });
+
+            // Simular búsqueda
+            document.querySelector('.search-bar button').addEventListener('click', function() {
+                const searchTerm = document.querySelector('.search-bar input').value;
+                console.log('Buscando:', searchTerm);
+                // Aquí iría la lógica para realizar la búsqueda
+            });
+
+            // Simular creación de nueva factura
+            document.querySelector('.btn-success').addEventListener('click', function() {
+                console.log('Creando nueva factura...');
+                // Aquí iría la lógica para abrir el formulario de nueva factura
+            });
+
+            // Simular paginación
+            document.querySelectorAll('.pagination-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!this.classList.contains('active')) {
+                        document.querySelector('.pagination-btn.active').classList.remove('active');
+                        this.classList.add('active');
+                        console.log('Cambiando a página:', this.textContent.trim());
+                        // Aquí iría la lógica para cargar la página seleccionada
+                    }
+                });
+            });
+
+            // Simular acciones sobre facturas
+            document.querySelectorAll('tbody .btn-outline').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const invoiceId = this.closest('tr').querySelector('td:first-child').textContent;
+                    console.log('Viendo detalle de la factura:', invoiceId);
+                    // Aquí iría la lógica para mostrar el detalle de la factura
+                });
+            });
+
+            // Simular generación de PDF
+            document.querySelectorAll('tbody .btn-primary').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const invoiceId = this.closest('tr').querySelector('td:first-child').textContent;
+                    console.log('Generando PDF para factura:', invoiceId);
+                    // Aquí iría la lógica para generar el PDF
+                });
+            });
+
+            // Simular impresión
+            document.querySelectorAll('tbody .btn-info').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const invoiceId = this.closest('tr').querySelector('td:first-child').textContent;
+                    console.log('Imprimiendo factura:', invoiceId);
+                    // Aquí iría la lógica para imprimir la factura
+                });
+            });
+
+            // Simular marcar como pagada o cancelar
+            document.querySelectorAll('tbody .btn-success, tbody .btn-danger').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const invoiceId = this.closest('tr').querySelector('td:first-child').textContent;
+                    const action = this.classList.contains('btn-success') ? 'marcar como pagada' : 'cancelar';
+                    console.log(`${action} factura:`, invoiceId);
+                    // Aquí iría la lógica para actualizar el estado de la factura
+                });
+            });
+
+            // Simular envío de recordatorio
+            document.querySelectorAll('tbody .btn-warning').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const invoiceId = this.closest('tr').querySelector('td:first-child').textContent;
+                    console.log('Enviando recordatorio para factura:', invoiceId);
+                    // Aquí iría la lógica para enviar el recordatorio
+                });
+            });
+        });
+    </script>
+</body>
+</html>

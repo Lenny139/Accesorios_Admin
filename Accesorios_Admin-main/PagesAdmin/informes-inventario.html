@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informes de Inventario - Accesorios AUTO-UPB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos heredados del panel principal */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #e6e9ff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --danger: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .content {
+            padding: 2rem;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Estilos específicos para los informes */
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .report-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a56d4;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: var(--bg);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn:hover:not(.active) {
+            background-color: var(--bg);
+        }
+
+        .chart-container {
+            margin-top: 2rem;
+            height: 300px;
+        }
+
+        .export-options {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .report-filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenido principal que se cargará en el área de contenido del panel -->
+    <div class="content">
+        <div class="card fade-in">
+            <div class="report-header">
+                <h2 class="card-title">
+                    <i class="fas fa-file-alt"></i>
+                    Informe de Inventario
+                </h2>
+                <div class="export-options">
+                    <button class="btn btn-outline">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                </div>
+            </div>
+
+            <div class="report-filters">
+                <div class="filter-group">
+                    <label for="report-type">Tipo de informe</label>
+                    <select id="report-type">
+                        <option value="stock">Niveles de stock</option>
+                        <option value="movements">Movimientos recientes</option>
+                        <option value="valuation">Valoración de inventario</option>
+                        <option value="expiring">Productos próximos a vencer</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="category">Categoría</label>
+                    <select id="category">
+                        <option value="all">Todas las categorías</option>
+                        <option value="electronics">Electrónicos</option>
+                        <option value="tools">Herramientas</option>
+                        <option value="parts">Repuestos</option>
+                        <option value="accessories">Accesorios</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date-from">Desde</label>
+                    <input type="date" id="date-from">
+                </div>
+
+                <div class="filter-group">
+                    <label for="date-to">Hasta</label>
+                    <input type="date" id="date-to">
+                </div>
+
+                <div class="filter-group" style="align-self: flex-end;">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Stock Actual</th>
+                            <th>Stock Mínimo</th>
+                            <th>Último Movimiento</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#1001</td>
+                            <td>Filtro de Aire Premium</td>
+                            <td>Repuestos</td>
+                            <td>45</td>
+                            <td>10</td>
+                            <td>15/06/2023</td>
+                            <td><span class="badge badge-success">Disponible</span></td>
+                        </tr>
+                        <tr>
+                            <td>#1002</td>
+                            <td>Llave de Rueda 19mm</td>
+                            <td>Herramientas</td>
+                            <td>8</td>
+                            <td>5</td>
+                            <td>10/06/2023</td>
+                            <td><span class="badge badge-warning">Bajo stock</span></td>
+                        </tr>
+                        <tr>
+                            <td>#1003</td>
+                            <td>Aceite Motor 5W-30</td>
+                            <td>Repuestos</td>
+                            <td>22</td>
+                            <td>15</td>
+                            <td>14/06/2023</td>
+                            <td><span class="badge badge-success">Disponible</span></td>
+                        </tr>
+                        <tr>
+                            <td>#1004</td>
+                            <td>Batería 12V 60Ah</td>
+                            <td>Electrónicos</td>
+                            <td>3</td>
+                            <td>5</td>
+                            <td>12/06/2023</td>
+                            <td><span class="badge badge-danger">Agotándose</span></td>
+                        </tr>
+                        <tr>
+                            <td>#1005</td>
+                            <td>Fundas para Asientos</td>
+                            <td>Accesorios</td>
+                            <td>15</td>
+                            <td>8</td>
+                            <td>16/06/2023</td>
+                            <td><span class="badge badge-success">Disponible</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="pagination-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <!-- Aquí iría un gráfico de niveles de stock -->
+                <img src="https://via.placeholder.com/800x300/e6e9ff/4361ee?text=Gráfico+de+Niveles+de+Stock" 
+                     alt="Gráfico de niveles de stock" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script para manejar la interacción con los filtros y la paginación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular cambio de datos al cambiar el tipo de informe
+            document.getElementById('report-type').addEventListener('change', function() {
+                console.log('Tipo de informe cambiado:', this.value);
+                // Aquí iría la lógica para cargar diferentes datos según el tipo de informe
+            });
+
+            // Simular acción de filtrado
+            document.querySelector('.btn-primary').addEventListener('click', function() {
+                console.log('Aplicando filtros...');
+                // Aquí iría la lógica para aplicar los filtros
+            });
+
+            // Simular acción de exportación
+            document.querySelector('.btn-outline').addEventListener('click', function() {
+                console.log('Exportando informe...');
+                // Aquí iría la lógica para exportar el informe
+            });
+
+            // Simular paginación
+            document.querySelectorAll('.pagination-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!this.classList.contains('active')) {
+                        document.querySelector('.pagination-btn.active').classList.remove('active');
+                        this.classList.add('active');
+                        console.log('Cambiando a página:', this.textContent.trim());
+                        // Aquí iría la lógica para cargar la página seleccionada
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

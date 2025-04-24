@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Órdenes de Compra - Accesorios AUTO-UPB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos heredados del panel principal */
+        :root {
+            --primary: #4361ee;
+            --primary-light: #e6e9ff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --danger: #ff4757;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .content {
+            padding: 2rem;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Estilos específicos para órdenes de compra */
+        .orders-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .orders-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3a56d4;
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-info {
+            background-color: var(--info);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary-light);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background-color: var(--bg);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-primary {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--border);
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn:hover:not(.active) {
+            background-color: var(--bg);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-bar input {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator.pending i {
+            color: var(--warning);
+        }
+
+        .status-indicator.approved i {
+            color: var(--success);
+        }
+
+        .status-indicator.rejected i {
+            color: var(--danger);
+        }
+
+        .status-indicator.processing i {
+            color: var(--info);
+        }
+
+        .status-indicator.completed i {
+            color: var(--primary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .orders-filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+
+            .orders-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-bar {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenido principal que se cargará en el área de contenido del panel -->
+    <div class="content">
+        <div class="card fade-in">
+            <div class="orders-header">
+                <h2 class="card-title">
+                    <i class="fas fa-file-invoice"></i>
+                    Órdenes de Compra
+                </h2>
+                <div class="search-bar">
+                    <input type="text" placeholder="Buscar orden...">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <button class="btn btn-success">
+                    <i class="fas fa-plus"></i> Nueva Orden
+                </button>
+            </div>
+
+            <div class="orders-filters">
+                <div class="filter-group">
+                    <label for="order-status">Estado</label>
+                    <select id="order-status">
+                        <option value="all">Todos los estados</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="approved">Aprobada</option>
+                        <option value="rejected">Rechazada</option>
+                        <option value="processing">En proceso</option>
+                        <option value="completed">Completada</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="supplier">Proveedor</label>
+                    <select id="supplier">
+                        <option value="all">Todos los proveedores</option>
+                        <option value="1">Proveedor Automotriz S.A.</option>
+                        <option value="2">Accesorios del Norte</option>
+                        <option value="3">Repuestos Premium</option>
+                        <option value="4">Distribuidora Rápido</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="date-from">Desde</label>
+                    <input type="date" id="date-from">
+                </div>
+
+                <div class="filter-group">
+                    <label for="date-to">Hasta</label>
+                    <input type="date" id="date-to">
+                </div>
+
+                <div class="filter-group" style="align-self: flex-end;">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>N° Orden</th>
+                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Fecha Entrega</th>
+                            <th>Responsable</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#OC-2023-105</td>
+                            <td>15/06/2023</td>
+                            <td>Proveedor Automotriz S.A.</td>
+                            <td>$1,250.00</td>
+                            <td>
+                                <div class="status-indicator completed">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Completada</span>
+                                </div>
+                            </td>
+                            <td>20/06/2023</td>
+                            <td>Juan Pérez</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#OC-2023-104</td>
+                            <td>10/06/2023</td>
+                            <td>Accesorios del Norte</td>
+                            <td>$890.50</td>
+                            <td>
+                                <div class="status-indicator processing">
+                                    <i class="fas fa-truck-loading"></i>
+                                    <span>En proceso</span>
+                                </div>
+                            </td>
+                            <td>18/06/2023</td>
+                            <td>María Gómez</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#OC-2023-103</td>
+                            <td>05/06/2023</td>
+                            <td>Repuestos Premium</td>
+                            <td>$2,150.75</td>
+                            <td>
+                                <div class="status-indicator approved">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    <span>Aprobada</span>
+                                </div>
+                            </td>
+                            <td>15/06/2023</td>
+                            <td>Carlos Ruiz</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#OC-2023-102</td>
+                            <td>01/06/2023</td>
+                            <td>Distribuidora Rápido</td>
+                            <td>$750.30</td>
+                            <td>
+                                <div class="status-indicator pending">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Pendiente</span>
+                                </div>
+                            </td>
+                            <td>-</td>
+                            <td>Ana López</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-primary">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-danger">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>#OC-2023-101</td>
+                            <td>28/05/2023</td>
+                            <td>Proveedor Automotriz S.A.</td>
+                            <td>$1,850.00</td>
+                            <td>
+                                <div class="status-indicator rejected">
+                                    <i class="fas fa-times-circle"></i>
+                                    <span>Rechazada</span>
+                                </div>
+                            </td>
+                            <td>-</td>
+                            <td>Juan Pérez</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-info">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <button class="pagination-btn"><i class="fas fa-chevron-left"></i></button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Script para manejar la interacción con los filtros y la paginación
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simular cambio de datos al cambiar los filtros
+            document.getElementById('order-status').addEventListener('change', function() {
+                console.log('Estado de orden cambiado:', this.value);
+                // Aquí iría la lógica para filtrar las órdenes
+            });
+
+            // Simular acción de filtrado
+            document.querySelector('.btn-primary').addEventListener('click', function() {
+                console.log('Aplicando filtros...');
+                // Aquí iría la lógica para aplicar los filtros
+            });
+
+            // Simular búsqueda
+            document.querySelector('.search-bar button').addEventListener('click', function() {
+                const searchTerm = document.querySelector('.search-bar input').value;
+                console.log('Buscando:', searchTerm);
+                // Aquí iría la lógica para realizar la búsqueda
+            });
+
+            // Simular creación de nueva orden
+            document.querySelector('.btn-success').addEventListener('click', function() {
+                console.log('Creando nueva orden de compra...');
+                // Aquí iría la lógica para abrir el formulario de nueva orden
+            });
+
+            // Simular paginación
+            document.querySelectorAll('.pagination-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!this.classList.contains('active')) {
+                        document.querySelector('.pagination-btn.active').classList.remove('active');
+                        this.classList.add('active');
+                        console.log('Cambiando a página:', this.textContent.trim());
+                        // Aquí iría la lógica para cargar la página seleccionada
+                    }
+                });
+            });
+
+            // Simular acciones sobre órdenes
+            document.querySelectorAll('tbody .btn-outline').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.closest('tr').querySelector('td:first-child').textContent;
+                    console.log('Viendo detalle de la orden:', orderId);
+                    // Aquí iría la lógica para mostrar el detalle de la orden
+                });
+            });
+
+            // Simular aprobación/rechazo de órdenes pendientes
+            document.querySelectorAll('tbody .btn-primary, tbody .btn-danger').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.closest('tr').querySelector('td:first-child').textContent;
+                    const action = this.classList.contains('btn-primary') ? 'aprobar' : 'rechazar';
+                    console.log(`${action} orden:`, orderId);
+                    // Aquí iría la lógica para aprobar/rechazar la orden
+                });
+            });
+
+            // Simular generación de PDF
+            document.querySelectorAll('tbody .btn-info').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.closest('tr').querySelector('td:first-child').textContent;
+                    console.log('Generando PDF para orden:', orderId);
+                    // Aquí iría la lógica para generar el PDF
+                });
+            });
+        });
+    </script>
+</body>
+</html>
