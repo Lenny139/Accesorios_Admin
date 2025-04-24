@@ -1,0 +1,747 @@
+<<!-- items.html -->
+<div class="items-management">
+    <!-- Encabezado y Botón de Agregar -->
+    <div class="card header-card">
+        <div class="header-content">
+            <h2 class="card-title">
+                <i class="fas fa-boxes"></i>
+                Gestión de Ítems
+            </h2>
+            <button id="add-item-btn" class="primary-btn">
+                <i class="fas fa-plus"></i> Nuevo Ítem
+            </button>
+        </div>
+    </div>
+
+    <!-- Barra de Búsqueda y Filtros -->
+    <div class="card filter-card">
+        <div class="search-filter-container">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="item-search" placeholder="Buscar ítems...">
+            </div>
+            <div class="filter-group">
+                <label for="item-type-filter"><i class="fas fa-filter"></i> Tipo:</label>
+                <select id="item-type-filter">
+                    <option value="">Todos</option>
+                    <option value="PARQ">Accesorios de parqueo</option>
+                    <option value="EXT">Exteriores</option>
+                    <option value="INTE">Interiores</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="stock-filter"><i class="fas fa-box-open"></i> Stock:</label>
+                <select id="stock-filter">
+                    <option value="">Todos</option>
+                    <option value="low">Stock bajo (<5)</option>
+                    <option value="out">Agotados</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Ítems -->
+    <div class="card table-card">
+        <div class="table-responsive">
+            <table id="items-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Stock</th>
+                    <th>P. Venta</th>
+                    <th>Descuento</th>
+                    <th>Envío</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Campo de las filas de la tabla-->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination">
+            <button class="pagination-btn" id="prev-page" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="page-info">Página 1 de 5</span>
+            <button class="pagination-btn" id="next-page">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar/Añadir Ítem (Versión Actualizada) -->
+<div id="item-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Editar Ítem</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="item-form">
+                <input type="hidden" id="item-id">
+
+                <!-- Sección Básica -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-name">Nombre *</label>
+                        <input type="text" id="item-name" maxlength="50" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item-type">Tipo *</label>
+                        <select id="item-type" required>
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Precios y Stock -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-stock">Stock *</label>
+                        <input type="number" id="item-stock" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item-purchaseprice">Precio de compra</label>
+                        <input type="number" id="item-purchaseprice" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item-sellingprice">Precio de venta</label>
+                        <input type="number" id="item-sellingprice" min="0" step="0.01" required>
+                    </div>
+                </div>
+
+                <!-- Envío y Descuentos -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="item-free_shipping">Envío Gratis</label>
+                        <select id="item-free_shipping">
+                            <option value="true">Sí</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="shipping-price-group">
+                        <label for="item-price_shipping">Precio de Envío</label>
+                        <input type="number" id="item-price_shipping" min="0" step="0.01" value="0.0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="item-has_discount">Tiene Descuento</label>
+                        <select id="item-has_discount">
+                            <option value="false">No</option>
+                            <option value="true">Sí</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Descuento (se muestra solo si has_discount es true) -->
+                <div class="form-row" id="discount-section" style="display: none;">
+                    <div class="form-group">
+                        <label for="item-discount">Descuento *</label>
+                        <select id="item-discount">
+                            <option value="">Seleccionar descuento...</option>
+                            <!-- Opciones se llenarán dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Gastos Adicionales -->
+                <div class="form-group">
+                    <label>Gastos Adicionales</label>
+                    <div id="additional-expenses-container">
+                        <!-- Se llenará dinámicamente con checkboxes -->
+                    </div>
+                </div>
+
+                <!-- Descripción e Imagen -->
+                <div class="form-group">
+                    <label for="item-description">Descripción *</label>
+                    <textarea id="item-description" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="item-image">Imagen</label>
+                    <input type="file" id="item-image" accept="image/*" required>
+                    <small class="text-muted">Tamaño máximo: 2MB</small>
+                    <div class="image-preview" id="image-preview"></div>
+                </div>
+
+                <!-- Estado -->
+                <div class="form-group">
+                    <label for="item-state">Estado</label>
+                    <select id="item-state">
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancelar</button>
+                    <button type="submit" class="save-btn">Guardar Ítem</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Ajustar Stock -->
+<div id="stock-modal" class="modal">
+    <div class="modal-content small-modal">
+        <div class="modal-header">
+            <h3>Ajustar Stock</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="stock-form">
+                <input type="hidden" id="stock-item-id">
+
+                <div class="form-group">
+                    <label for="stock-action">Acción</label>
+                    <select id="stock-action">
+                        <option value="add">Añadir stock</option>
+                        <option value="remove">Restar stock</option>
+                        <option value="set">Establecer valor exacto</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="stock-amount">Cantidad</label>
+                    <input type="number" id="stock-amount" min="1" value="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stock-reason">Motivo</label>
+                    <input type="text" id="stock-reason" placeholder="Ej: Recepción de mercancía" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancelar</button>
+                    <button type="submit" class="save-btn">Aplicar Ajuste</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="cart-notification">
+    <div class="notification-icon">
+        <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="notification-content">
+        <h4>Éxito</h4>
+        <p id="notification-message">Item guardado con éxito</p>
+    </div>
+    <div class="notification-progress"></div>
+</div>
+
+<style>
+    :root {
+        --notification-color: #4CAF50;
+        --notification-error: #F44336;
+        --notification-warning: #FF9800;
+        --notification-info: #2196F3;
+    }
+    /* Estilos específicos para la gestión de ítems */
+    .items-management {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .header-card .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .primary-btn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .primary-btn:hover {
+        background-color: #3a56d4;
+        transform: translateY(-2px);
+    }
+
+    .search-filter-container {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex-grow: 1;
+        position: relative;
+        max-width: 400px;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.95rem;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .filter-group label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    .filter-group select {
+        padding: 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background-color: white;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    #items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #items-table th {
+        background-color: var(--primary-light);
+        color: var(--primary);
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+    }
+
+    #items-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+    }
+
+    .item-image img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .stock-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        justify-content: flex-start;
+    }
+
+    .stock-value {
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .low-stock {
+        color: var(--danger);
+        font-weight: bold;
+    }
+
+    .stock-btn, .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .stock-btn {
+        color: var(--primary);
+    }
+
+    .stock-btn:hover {
+        background-color: var(--primary-light);
+    }
+
+    .edit-btn {
+        color: #28a745;
+    }
+
+    .edit-btn:hover {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+
+    .delete-btn {
+        color: var(--danger);
+    }
+
+    .delete-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .status-badge.active {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.inactive {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .pagination-btn {
+        background: none;
+        border: 1px solid var(--border);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background-color: var(--primary-light);
+        color: var(--primary);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .page-info {
+        font-size: 0.9rem;
+        color: var(--text-light);
+    }
+
+    /* Estilos para los modales */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalFadeIn 0.3s;
+    }
+
+    .small-modal {
+        max-width: 400px;
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: var(--primary);
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-light);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    .image-preview {
+        margin-top: 1rem;
+    }
+
+    .image-preview img {
+        max-width: 100px;
+        max-height: 100px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .cancel-btn {
+        background: none;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .save-btn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    /* Estilos para additional expenses */
+    #additional-expenses-container {
+        margin-left: 0; /* Elimina el margen negativo que tenía */
+        padding: 0.5rem 0; /* Espacio vertical */
+        border: 1px solid var(--border); /* Opcional: borde para contenedor */
+        border-radius: 6px;
+        padding-left: 1rem; /* Alineación con el label */
+        margin-top: 0.5rem; /* Espacio del label */
+        background-color: #f9f9f9; /* Fondo claro opcional */
+    }
+
+    /* Estilos para cada opción de gasto */
+    .expense-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.25rem 0; /* Espacio interno */
+    }
+
+    .expense-option input[type="checkbox"] {
+        margin: 0;
+        width: auto;
+        transform: scale(1.2); /* Hace el checkbox un poco más grande */
+    }
+
+    .expense-option label {
+        margin: 0;
+        font-weight: normal;
+        color: var(--text); /* Color consistente con otros textos */
+        font-size: 0.95rem; /* Tamaño similar a otros inputs */
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* style de la notificacion*/
+
+    .cart-notification {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: white;
+        color: var(--text);
+        padding: 15px 25px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        opacity: 0;
+        transform: translateX(120%);
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 1000;
+        border-left: 4px solid var(--notification-color);
+    }
+
+    .cart-notification.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .notification-icon i {
+        font-size: 1.5rem;
+        color: var(--notification-color);
+    }
+
+    .notification-content h4 {
+        margin: 0 0 5px 0;
+        font-size: 1rem;
+        color: var(--notification-color);
+    }
+
+    .notification-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text);
+    }
+
+    .notification-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: var(--notification-color);
+        width: 100%;
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+
+    @keyframes progress {
+        to { transform: scaleX(1); }
+    }
+
+    .cart-notification.error {
+        border-left-color: var(--notification-error);
+    }
+
+    .cart-notification.error .notification-icon i,
+    .cart-notification.error .notification-content h4 {
+        color: var(--notification-error);
+    }
+
+    .cart-notification.error .notification-progress {
+        background: var(--notification-error);
+    }
+
+    .cart-notification.warning {
+        border-left-color: var(--notification-warning);
+    }
+
+    .cart-notification.warning .notification-icon i,
+    .cart-notification.warning .notification-content h4 {
+        color: var(--notification-warning);
+    }
+
+    .cart-notification.warning .notification-progress {
+        background: var(--notification-warning);
+    }
+
+    .cart-notification.info {
+        border-left-color: var(--notification-info);
+    }
+
+    .cart-notification.info .notification-icon i,
+    .cart-notification.info .notification-content h4 {
+        color: var(--notification-info);
+    }
+
+    .cart-notification.info .notification-progress {
+        background: var(--notification-info);
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .search-filter-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .search-box {
+            max-width: 100%;
+        }
+    }
+</style>
