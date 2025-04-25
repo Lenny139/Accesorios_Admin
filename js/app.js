@@ -11,6 +11,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (userData) {
+        document.getElementById('current-user').textContent = userData.email;
+    }
+
     // Elementos del DOM
     const DOM = {
         content: document.getElementById("contenido"),
@@ -102,9 +107,10 @@ document.addEventListener("DOMContentLoaded", function () {
         setupLogout() {
             DOM.logoutBtn.addEventListener("click", function() {
                 if(confirm("¿Está seguro que desea cerrar sesión?")) {
-                    // Aquí iría la lógica real de cierre de sesión
-                    console.log("Sesión cerrada");
-                    // Redirección temporal para demostración
+                    // Limpiar localStorage
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userData');
+                    // Redireccionar al login
                     window.location.href = "login.html";
                 }
             });
@@ -579,7 +585,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     `${CONFIG.apiBaseUrl}/items/add`;
                 const method = itemId ? 'PUT' : 'POST';
 
-                const response = await fetch(url, { method, body: formData });
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    throw new Error('No se encontró el token de autenticación');
+                }
+                console.log("Token JWT:", authToken);
+                console.log("URL:", url);
+                console.log("Método:", method);
+                const response = await fetch(url, {
+                    method,
+                    body: formData,
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
 
                 if (!response.ok) {
                     const error = await response.json();
@@ -596,8 +615,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     this.elements.stockFilter?.value
                 );
             } catch (error) {
-                console.error('Error:', error);
-                this.showNotification(error.message || 'Error al guardar el ítem', 'error');
+                console.error('Error completo:', error);
+                this.showNotification(
+                    error.message === 'Failed to fetch' ?
+                        'Error de conexión con el servidor' :
+                        error.message || 'Error al guardar el ítem',
+                    'error'
+                );
             } finally {
                 saveBtn.textContent = originalBtnText;
                 saveBtn.disabled = false;
