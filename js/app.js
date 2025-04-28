@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
+
+    // Verificar autenticación al cargar
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     // Constantes y configuraciones
     const CONFIG = {
         apiBaseUrl: "http://localhost:8080",
@@ -107,15 +115,128 @@ document.addEventListener("DOMContentLoaded", function () {
         },
 
         setupLogout() {
-            DOM.logoutBtn.addEventListener("click", function() {
-                if(confirm("¿Está seguro que desea cerrar sesión?")) {
-                    // Limpiar localStorage
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('userData');
-                    // Redireccionar al login
-                    window.location.href = "login.html";
-                }
+            DOM.logoutBtn.addEventListener("click", () => {
+                NotificationManager.showConfirmation(
+                    "¿Está seguro que desea cerrar sesión?",
+                    () => {
+                        const authToken = localStorage.getItem('authToken');
+
+                        // Opcional: Invalidar token en el backend
+                        if (authToken) {
+                            fetch('http://localhost:8080/api/logout', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`
+                                }
+                            }).catch(error => console.error('Error al cerrar sesión:', error));
+                        }
+
+                        // Limpiar localStorage
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('userData');
+
+                        // Mostrar notificación
+                        NotificationManager.showNotification('Sesión cerrada correctamente');
+
+                        // Redireccionar al login después de un breve retraso
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    }
+                );
             });
+        }
+    };
+
+    // Módulo de Notificaciones
+    const NotificationManager = {
+        // Mostrar notificación toast (éxito/error)
+        showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationTitle = notification.querySelector('.notification-content h4'); // Seleccionamos el título
+            const notificationIcon = notification.querySelector('.notification-icon i');
+            const progress = notification.querySelector('.notification-progress');
+
+            // Configurar título según el tipo
+            const titles = {
+                success: 'Éxito',
+                error: 'Error',
+                warning: 'Advertencia',
+                info: 'Información'
+            };
+
+            // Configurar según el tipo
+            notification.className = 'cart-notification';
+            notification.classList.add(type);
+            notification.classList.add('visible');
+
+            // Cambiar título e ícono según el tipo
+            notificationTitle.textContent = titles[type] || 'Notificación';
+
+            if (type === 'success') {
+                notificationIcon.className = 'fas fa-check-circle';
+            } else if (type === 'error') {
+                notificationIcon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'warning') {
+                notificationIcon.className = 'fas fa-exclamation-triangle';
+            } else {
+                notificationIcon.className = 'fas fa-info-circle';
+            }
+
+            notificationMessage.textContent = message;
+
+            // Reiniciar animación de progreso
+            progress.style.animation = 'none';
+            void progress.offsetWidth; // Trigger reflow
+            progress.style.animation = 'progress 3s linear';
+
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                notification.classList.remove('visible');
+            }, 3000);
+        },
+        // Mostrar diálogo de confirmación personalizado
+        showConfirmation(message, confirmCallback, cancelCallback = null) {
+            // Crear elementos
+            const overlay = document.createElement('div');
+            overlay.className = 'notification-overlay';
+
+            const confirmation = document.createElement('div');
+            confirmation.className = 'custom-confirmation';
+            confirmation.innerHTML = `
+            <h3>Confirmación</h3>
+            <p>${message}</p>
+            <div class="confirmation-buttons">
+                <button class="confirmation-btn cancel-btn">Cancelar</button>
+                <button class="confirmation-btn confirm-btn">Confirmar</button>
+            </div>
+        `;
+
+            // Agregar al DOM
+            overlay.appendChild(confirmation);
+            document.body.appendChild(overlay);
+
+            // Configurar eventos
+            const confirmBtn = confirmation.querySelector('.confirm-btn');
+            const cancelBtn = confirmation.querySelector('.cancel-btn');
+
+            confirmBtn.onclick = () => {
+                document.body.removeChild(overlay);
+                if (confirmCallback) confirmCallback();
+            };
+
+            cancelBtn.onclick = () => {
+                document.body.removeChild(overlay);
+                if (cancelCallback) cancelCallback();
+            };
+
+            overlay.onclick = (e) => {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                    if (cancelCallback) cancelCallback();
+                }
+            };
         }
     };
 
@@ -209,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.renderItemsTable();
             } catch (error) {
                 console.error('Error loading items:', error);
-                this.showNotification('Error al cargar los ítems', 'error');
+                NotificationManager.showNotification('Error al cargar los ítems', 'error');
             }
         },
         async handleStockUpdate(event) {
@@ -252,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const data = await response.json();
-                this.showNotification('Stock actualizado con éxito');
+                NotificationManager.showNotification('Stock actualizado con éxito');
                 this.elements.stockModal.style.display = 'none';
                 this.loadItems(
                     this.currentPage,
@@ -262,7 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             } catch (error) {
                 console.error('Error al actualizar stock:', error);
-                this.showNotification(
+                NotificationManager.showNotification(
                     error.message === 'Failed to fetch' ?
                         'Error de conexión con el servidor' :
                         error.message || 'Error al actualizar el stock',
@@ -455,42 +576,45 @@ document.addEventListener("DOMContentLoaded", function () {
                 deleteBtn.className = 'action-btn delete-btn';
                 deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
                 deleteBtn.addEventListener('click', async () => {
-                    if (confirm(`¿Estás seguro de eliminar el ítem ${item.name}?`)) {
-                        try {
-                            const authToken = localStorage.getItem('authToken');
-                            if (!authToken) {
-                                throw new Error('No se encontró el token de autenticación');
-                            }
-
-                            const response = await fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.deleteItem}/${item.id}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Authorization': `Bearer ${authToken}`
+                    NotificationManager.showConfirmation(
+                        `¿Estás seguro de eliminar el ítem ${item.name}?`,
+                        async () => {
+                            try {
+                                const authToken = localStorage.getItem('authToken');
+                                if (!authToken) {
+                                    throw new Error('No se encontró el token de autenticación');
                                 }
-                            });
 
-                            if (!response.ok) {
-                                const error = await response.json();
-                                throw new Error(error.message || 'Error al eliminar el ítem');
+                                const response = await fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.deleteItem}/${item.id}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': `Bearer ${authToken}`
+                                    }
+                                });
+
+                                if (!response.ok) {
+                                    const error = await response.json();
+                                    throw new Error(error.message || 'Error al eliminar el ítem');
+                                }
+
+                                NotificationManager.showNotification('Ítem eliminado con éxito');
+                                this.loadItems(
+                                    this.currentPage,
+                                    this.elements.itemSearch?.value,
+                                    this.elements.itemTypeFilter?.value,
+                                    this.elements.stockFilter?.value
+                                );
+                            } catch (error) {
+                                console.error('Error al eliminar ítem:', error);
+                                NotificationManager.showNotification(
+                                    error.message === 'Failed to fetch' ?
+                                        'Error de conexión con el servidor' :
+                                        error.message || 'Error al eliminar el ítem',
+                                    'error'
+                                );
                             }
-
-                            this.showNotification('Ítem eliminado con éxito');
-                            this.loadItems(
-                                this.currentPage,
-                                this.elements.itemSearch?.value,
-                                this.elements.itemTypeFilter?.value,
-                                this.elements.stockFilter?.value
-                            );
-                        } catch (error) {
-                            console.error('Error al eliminar ítem:', error);
-                            this.showNotification(
-                                error.message === 'Failed to fetch' ?
-                                    'Error de conexión con el servidor' :
-                                    error.message || 'Error al eliminar el ítem',
-                                'error'
-                            );
                         }
-                    }
+                    );
                 });
 
                 actionsCell.appendChild(editBtn);
@@ -623,7 +747,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.elements.itemModal.style.display = 'flex';
             } catch (error) {
                 console.error('Error al cargar datos del ítem:', error);
-                this.showNotification('Error al cargar los datos del ítem', 'error');
+                NotificationManager.showNotification('Error al cargar los datos del ítem', 'error');
             }
         },
 
@@ -641,13 +765,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Validaciones comunes
             if (!name || !type || !stock || !purchaseprice || !sellingprice) {
-                this.showNotification('Por favor complete todos los campos obligatorios', 'error');
+                NotificationManager.showNotification('Por favor complete todos los campos obligatorios', 'error');
                 return;
             }
 
             // Validación de imagen solo para nuevos ítems
             if (!itemId && !imageFile) {
-                this.showNotification('Por favor seleccione una imagen para el ítem', 'error');
+                NotificationManager.showNotification('Por favor seleccione una imagen para el ítem', 'error');
                 return;
             }
 
@@ -710,7 +834,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const data = await response.json();
-                this.showNotification('Ítem guardado con éxito');
+                NotificationManager.showNotification('Ítem guardado con éxito');
                 this.elements.itemModal.style.display = 'none';
                 this.loadItems(
                     this.currentPage,
@@ -720,7 +844,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             } catch (error) {
                 console.error('Error completo:', error);
-                this.showNotification(
+                NotificationManager.showNotification(
                     error.message === 'Failed to fetch' ?
                         'Error de conexión con el servidor' :
                         error.message || 'Error al guardar el ítem',
@@ -730,52 +854,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 saveBtn.textContent = originalBtnText;
                 saveBtn.disabled = false;
             }
-        },
-
-        showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const notificationMessage = document.getElementById('notification-message');
-            const notificationTitle = notification.querySelector('.notification-content h4'); // Seleccionamos el título
-            const notificationIcon = notification.querySelector('.notification-icon i');
-            const progress = notification.querySelector('.notification-progress');
-
-            // Configurar título según el tipo
-            const titles = {
-                success: 'Éxito',
-                error: 'Error',
-                warning: 'Advertencia',
-                info: 'Información'
-            };
-
-            // Configurar según el tipo
-            notification.className = 'cart-notification';
-            notification.classList.add(type);
-            notification.classList.add('visible');
-
-            // Cambiar título e ícono según el tipo
-            notificationTitle.textContent = titles[type] || 'Notificación';
-
-            if (type === 'success') {
-                notificationIcon.className = 'fas fa-check-circle';
-            } else if (type === 'error') {
-                notificationIcon.className = 'fas fa-exclamation-circle';
-            } else if (type === 'warning') {
-                notificationIcon.className = 'fas fa-exclamation-triangle';
-            } else {
-                notificationIcon.className = 'fas fa-info-circle';
-            }
-
-            notificationMessage.textContent = message;
-
-            // Reiniciar animación de progreso
-            progress.style.animation = 'none';
-            void progress.offsetWidth; // Trigger reflow
-            progress.style.animation = 'progress 3s linear';
-
-            // Ocultar después de 3 segundos
-            setTimeout(() => {
-                notification.classList.remove('visible');
-            }, 3000);
         }
     };
     // Inicialización

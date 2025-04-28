@@ -36,5 +36,13 @@
     </div>
 </div>
 <script src="../js/login.js"></script>
+<script>
+    // Verificar si ya está autenticado al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem('authToken')) {
+            window.location.href = 'PanelAdmin.html';
+        }
+    });
+</script>
 </body>
 </html>
