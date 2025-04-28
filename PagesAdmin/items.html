@@ -92,12 +92,12 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="item-name">Nombre *</label>
-                        <input type="text" id="item-name" maxlength="50" required>
+                        <input type="text" id="item-name" maxlength="50">
                     </div>
 
                     <div class="form-group">
                         <label for="item-type">Tipo *</label>
-                        <select id="item-type" required>
+                        <select id="item-type">
                             <option value="">Seleccionar...</option>
                         </select>
                     </div>
@@ -107,17 +107,17 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="item-stock">Stock *</label>
-                        <input type="number" id="item-stock" min="0" required>
+                        <input type="number" id="item-stock" min="0">
                     </div>
 
                     <div class="form-group">
-                        <label for="item-purchaseprice">Precio de compra</label>
-                        <input type="number" id="item-purchaseprice" min="0" step="0.01" required>
+                        <label for="item-purchaseprice">Precio de compra *</label>
+                        <input type="number" id="item-purchaseprice" min="0" step="0.01">
                     </div>
 
                     <div class="form-group">
-                        <label for="item-sellingprice">Precio de venta</label>
-                        <input type="number" id="item-sellingprice" min="0" step="0.01" required>
+                        <label for="item-sellingprice">Precio de venta *</label>
+                        <input type="number" id="item-sellingprice" min="0" step="0.01">
                     </div>
                 </div>
 
@@ -167,13 +167,12 @@
                 <!-- Descripción e Imagen -->
                 <div class="form-group">
                     <label for="item-description">Descripción *</label>
-                    <textarea id="item-description" rows="3" required></textarea>
+                    <textarea id="item-description" rows="3"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="item-image">Imagen</label>
-                    <input type="file" id="item-image" accept="image/*" required>
-                    <small class="text-muted">Tamaño máximo: 2MB</small>
+                    <label for="item-image">Imagen *</label>
+                    <input type="file" id="item-image" accept="image/*">
                     <div class="image-preview" id="image-preview"></div>
                 </div>
 
@@ -232,17 +231,6 @@
             </form>
         </div>
     </div>
-</div>
-
-<div id="notification" class="cart-notification">
-    <div class="notification-icon">
-        <i class="fas fa-check-circle"></i>
-    </div>
-    <div class="notification-content">
-        <h4>Éxito</h4>
-        <p id="notification-message">Item guardado con éxito</p>
-    </div>
-    <div class="notification-progress"></div>
 </div>
 
 <style>
@@ -630,104 +618,6 @@
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-
-    /* style de la notificacion*/
-
-    .cart-notification {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: white;
-        color: var(--text);
-        padding: 15px 25px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        opacity: 0;
-        transform: translateX(120%);
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        z-index: 1000;
-        border-left: 4px solid var(--notification-color);
-    }
-
-    .cart-notification.visible {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    .notification-icon i {
-        font-size: 1.5rem;
-        color: var(--notification-color);
-    }
-
-    .notification-content h4 {
-        margin: 0 0 5px 0;
-        font-size: 1rem;
-        color: var(--notification-color);
-    }
-
-    .notification-content p {
-        margin: 0;
-        font-size: 0.9rem;
-        color: var(--text);
-    }
-
-    .notification-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 3px;
-        background: var(--notification-color);
-        width: 100%;
-        transform: scaleX(0);
-        transform-origin: left;
-    }
-
-    @keyframes progress {
-        to { transform: scaleX(1); }
-    }
-
-    .cart-notification.error {
-        border-left-color: var(--notification-error);
-    }
-
-    .cart-notification.error .notification-icon i,
-    .cart-notification.error .notification-content h4 {
-        color: var(--notification-error);
-    }
-
-    .cart-notification.error .notification-progress {
-        background: var(--notification-error);
-    }
-
-    .cart-notification.warning {
-        border-left-color: var(--notification-warning);
-    }
-
-    .cart-notification.warning .notification-icon i,
-    .cart-notification.warning .notification-content h4 {
-        color: var(--notification-warning);
-    }
-
-    .cart-notification.warning .notification-progress {
-        background: var(--notification-warning);
-    }
-
-    .cart-notification.info {
-        border-left-color: var(--notification-info);
-    }
-
-    .cart-notification.info .notification-icon i,
-    .cart-notification.info .notification-content h4 {
-        color: var(--notification-info);
-    }
-
-    .cart-notification.info .notification-progress {
-        background: var(--notification-info);
-    }
-
     @media (max-width: 768px) {
         .form-row {
             flex-direction: column;

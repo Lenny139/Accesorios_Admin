@@ -7,7 +7,9 @@ document.addEventListener("DOMContentLoaded", function () {
             itemTypes: "/api/itemtypes",
             discounts: "/api/discounts",
             additionalExpenses: "/additionalExpenses/getall",
-            itemDetails: "/items/public"
+            itemDetails: "/items/public",
+            updateStock: "/items",  // Nuevo endpoint para actualizar stock
+            deleteItem: "/items/delete"     // Nuevo endpoint para eliminar items
         }
     };
 
@@ -171,6 +173,7 @@ document.addEventListener("DOMContentLoaded", function () {
             this.elements.freeShippingSelect?.addEventListener('change', () => this.toggleShippingPrice());
             document.getElementById('item-image')?.addEventListener('change', (e) => this.handleImagePreview(e));
             this.elements.itemForm?.addEventListener('submit', (e) => this.handleFormSubmit(e));
+            document.getElementById('stock-form')?.addEventListener('submit', (e) => this.handleStockUpdate(e));
         },
 
         loadInitialData() {
@@ -209,7 +212,67 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.showNotification('Error al cargar los ítems', 'error');
             }
         },
+        async handleStockUpdate(event) {
+            event.preventDefault();
 
+            const itemId = document.getElementById('stock-item-id').value;
+            const action = document.getElementById('stock-action').value;
+            const amount = parseInt(document.getElementById('stock-amount').value);
+            const reason = document.getElementById('stock-reason').value;
+
+            const stockUpdateRequest = {
+                action: action,
+                amount: amount,
+                reason: reason
+            };
+
+            const saveBtn = document.querySelector('#stock-form .save-btn');
+            const originalBtnText = saveBtn.textContent;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualizando...';
+            saveBtn.disabled = true;
+
+            try {
+                const authToken = localStorage.getItem('authToken');
+                if (!authToken) {
+                    throw new Error('No se encontró el token de autenticación');
+                }
+
+                const response = await fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.updateStock}/${itemId}/stock`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(stockUpdateRequest)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Error al actualizar el stock');
+                }
+
+                const data = await response.json();
+                this.showNotification('Stock actualizado con éxito');
+                this.elements.stockModal.style.display = 'none';
+                this.loadItems(
+                    this.currentPage,
+                    this.elements.itemSearch?.value,
+                    this.elements.itemTypeFilter?.value,
+                    this.elements.stockFilter?.value
+                );
+            } catch (error) {
+                console.error('Error al actualizar stock:', error);
+                this.showNotification(
+                    error.message === 'Failed to fetch' ?
+                        'Error de conexión con el servidor' :
+                        error.message || 'Error al actualizar el stock',
+                    'error'
+                );
+            } finally {
+                saveBtn.textContent = originalBtnText;
+                saveBtn.disabled = false;
+            }
+        },
         async loadItemTypes() {
             try {
                 const response = await fetch(CONFIG.endpoints.itemTypes);
@@ -391,9 +454,42 @@ document.addEventListener("DOMContentLoaded", function () {
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'action-btn delete-btn';
                 deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                deleteBtn.addEventListener('click', () => {
+                deleteBtn.addEventListener('click', async () => {
                     if (confirm(`¿Estás seguro de eliminar el ítem ${item.name}?`)) {
-                        // Lógica para eliminar el ítem
+                        try {
+                            const authToken = localStorage.getItem('authToken');
+                            if (!authToken) {
+                                throw new Error('No se encontró el token de autenticación');
+                            }
+
+                            const response = await fetch(`${CONFIG.apiBaseUrl}${CONFIG.endpoints.deleteItem}/${item.id}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `Bearer ${authToken}`
+                                }
+                            });
+
+                            if (!response.ok) {
+                                const error = await response.json();
+                                throw new Error(error.message || 'Error al eliminar el ítem');
+                            }
+
+                            this.showNotification('Ítem eliminado con éxito');
+                            this.loadItems(
+                                this.currentPage,
+                                this.elements.itemSearch?.value,
+                                this.elements.itemTypeFilter?.value,
+                                this.elements.stockFilter?.value
+                            );
+                        } catch (error) {
+                            console.error('Error al eliminar ítem:', error);
+                            this.showNotification(
+                                error.message === 'Failed to fetch' ?
+                                    'Error de conexión con el servidor' :
+                                    error.message || 'Error al eliminar el ítem',
+                                'error'
+                            );
+                        }
                     }
                 });
 
@@ -416,6 +512,7 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById('item-form').reset();
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('item-id').value = '';
+            document.querySelector('#item-form .save-btn').textContent = 'Guardar Ítem';
             this.elements.discountSection.style.display = 'none';
             this.elements.shippingPriceGroup.style.display = 'none';
             this.elements.itemModal.style.display = 'flex';
@@ -485,6 +582,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Llenar formulario
                 document.getElementById('modal-title').textContent = 'Editar Ítem';
+                document.querySelector('#item-form .save-btn').textContent = 'Actualizar Ítem';
                 document.getElementById('item-id').value = item.id;
                 document.getElementById('item-name').value = item.name;
                 document.getElementById('item-type').value = item.itemtype?.id || '';
@@ -508,6 +606,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (item.imageurl) {
                     document.getElementById('image-preview').innerHTML =
                         `<img src="${CONFIG.apiBaseUrl}/uploads/${item.imageurl}" alt="Preview">`;
+
+                    // Añadir esta línea para marcar que ya hay una imagen
+                    document.getElementById('item-image').dataset.hasExistingImage = 'true';
                 }
 
                 // Cargar y marcar gastos adicionales
@@ -536,13 +637,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const purchaseprice = document.getElementById('item-purchaseprice').value;
             const sellingprice = document.getElementById('item-sellingprice').value;
             const imageFile = document.getElementById('item-image').files[0];
+            const itemId = document.getElementById('item-id').value;
 
+            // Validaciones comunes
             if (!name || !type || !stock || !purchaseprice || !sellingprice) {
                 this.showNotification('Por favor complete todos los campos obligatorios', 'error');
                 return;
             }
 
-            if (!imageFile && !document.getElementById('item-id').value) {
+            // Validación de imagen solo para nuevos ítems
+            if (!itemId && !imageFile) {
                 this.showNotification('Por favor seleccione una imagen para el ítem', 'error');
                 return;
             }
@@ -631,15 +735,26 @@ document.addEventListener("DOMContentLoaded", function () {
         showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const notificationMessage = document.getElementById('notification-message');
+            const notificationTitle = notification.querySelector('.notification-content h4'); // Seleccionamos el título
             const notificationIcon = notification.querySelector('.notification-icon i');
             const progress = notification.querySelector('.notification-progress');
+
+            // Configurar título según el tipo
+            const titles = {
+                success: 'Éxito',
+                error: 'Error',
+                warning: 'Advertencia',
+                info: 'Información'
+            };
 
             // Configurar según el tipo
             notification.className = 'cart-notification';
             notification.classList.add(type);
             notification.classList.add('visible');
 
-            // Cambiar ícono según el tipo
+            // Cambiar título e ícono según el tipo
+            notificationTitle.textContent = titles[type] || 'Notificación';
+
             if (type === 'success') {
                 notificationIcon.className = 'fas fa-check-circle';
             } else if (type === 'error') {
