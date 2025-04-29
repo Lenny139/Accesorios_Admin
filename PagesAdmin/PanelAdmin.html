@@ -30,7 +30,7 @@
         }
 
         .user-info {
-            position: absolute;
+            position: fixed; /* Cambiado de absolute a fixed para mejor comportamiento */
             top: 1rem;
             right: 1rem;
             color: white;
@@ -38,6 +38,7 @@
             padding: 0.5rem 1rem;
             border-radius: 20px;
             font-size: 0.9rem;
+            z-index: 100; /* Asegura que esté por encima de otros elementos */
         }
 
         /* Layout Principal */
@@ -147,8 +148,10 @@
         /* Contenido */
         .content {
             padding: 2rem;
-            overflow-y: auto;
-            height: calc(100vh - 70px);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 3.5rem;
         }
 
         .card {
