@@ -1,4 +1,4 @@
-<<!-- items.html -->
+<!-- items.html -->
 <div class="items-management">
     <!-- Encabezado y Botón de Agregar -->
     <div class="card header-card">
@@ -245,6 +245,7 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        height: 100%;
     }
 
     .header-card .header-content {
@@ -318,14 +319,22 @@
         border-radius: 4px;
         background-color: white;
     }
+    .table-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
 
     .table-responsive {
-        overflow-x: auto;
+        flex: 1;
+        overflow: auto;
+        margin-bottom: 1rem;
     }
 
     #items-table {
         width: 100%;
         border-collapse: collapse;
+        min-width: 1000px;
     }
 
     #items-table th {
