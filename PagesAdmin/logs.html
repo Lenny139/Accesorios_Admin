@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros - Accesorios AUTO-UPB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #e6e9ff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --danger: #ff4757;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        /* Layout Principal */
+        .admin-container {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            min-height: 100vh;
+        }
+
+        /* Contenido Principal */
+        .admin-main {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--card-bg);
+            border-right: 1px solid var(--border);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 2rem;
+            overflow-y: auto;
+            height: calc(100vh - 70px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Tabla de registros */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+
+        /* Estilos para diferentes tipos de acciones */
+        .action-create {
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .action-update {
+            color: var(--info);
+            font-weight: 500;
+        }
+
+        .action-delete {
+            color: var(--danger);
+            font-weight: 500;
+        }
+
+        .action-other {
+            color: var(--warning);
+            font-weight: 500;
+        }
+
+        /* Filtros */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .filter-group select, 
+        .filter-group input {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        /* Detalles del registro */
+        .details-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .details-content {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 80vh;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            overflow-y: auto;
+        }
+
+        .details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .details-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        .close-details-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .details-body {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-main {
+                grid-template-columns: 70px 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+
+        <!-- Content Area -->
+        <div class="content" id="contenido">
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Registros de Auditoría
+                </h2>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="filter-action">Acción</label>
+                        <select id="filter-action">
+                            <option value="">Todas</option>
+                            <option value="CREATE">Creación</option>
+                            <option value="UPDATE">Actualización</option>
+                            <option value="DELETE">Eliminación</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-entity">Entidad</label>
+                        <select id="filter-entity">
+                            <option value="">Todas</option>
+                            <option value="Item">Ítem</option>
+                            <option value="User">Usuario</option>
+                            <option value="Order">Orden</option>
+                            <option value="Customer">Cliente</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-user">Usuario</label>
+                        <select id="filter-user">
+                            <option value="">Todos</option>
+                            <option value="admin">Administrador</option>
+                            <option value="carlos">Carlos Rodríguez</option>
+                            <option value="maria">María Gómez</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-date">Fecha</label>
+                        <input type="date" id="filter-date">
+                    </div>
+                    <div class="filter-group">
+                        <label for="search">Buscar</label>
+                        <input type="text" id="search" placeholder="ID, detalles...">
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Acción</th>
+                                <th>Entidad</th>
+                                <th>ID Entidad</th>
+                                <th>IP</th>
+                                <th>Fecha</th>
+                                <th>Detalles</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Carlos Rodríguez</td>
+                                <td class="action-create">CREATE_ITEM</td>
+                                <td>Item</td>
+                                <td>ITM-1001</td>
+                                <td>192.168.1.10</td>
+                                <td>2023-06-15 09:30:22</td>
+                                <td>
+                                    <button class="view-details-btn" data-details='{"name":"Llanta deportiva","price":120000,"stock":50}'>
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>María Gómez</td>
+                                <td class="action-update">UPDATE_ORDER</td>
+                                <td>Order</td>
+                                <td>ORD-2054</td>
+                                <td>192.168.1.15</td>
+                                <td>2023-06-15 10:15:43</td>
+                                <td>
+                                    <button class="view-details-btn" data-details='{"changes":{"status":["Pendiente","Procesado"],"payment":["Efectivo","Tarjeta"]}}'>
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>Carlos Rodríguez</td>
+                                <td class="action-delete">DELETE_USER</td>
+                                <td>User</td>
+                                <td>USR-1003</td>
+                                <td>192.168.1.10</td>
+                                <td>2023-06-14 16:20:18</td>
+                                <td>
+                                    <button class="view-details-btn" data-details='{"username":"juan.perez","email":"juan.perez@example.com","role":"Cliente"}'>
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>Ana López</td>
+                                <td class="action-create">CREATE_CUSTOMER</td>
+                                <td>Customer</td>
+                                <td>CLI-1005</td>
+                                <td>192.168.1.20</td>
+                                <td>2023-06-14 14:05:37</td>
+                                <td>
+                                    <button class="view-details-btn" data-details='{"name":"Pedro Sánchez","email":"pedro.sanchez@example.com","phone":"+57 301 5678901"}'>
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>Carlos Rodríguez</td>
+                                <td class="action-update">UPDATE_ITEM</td>
+                                <td>Item</td>
+                                <td>ITM-1002</td>
+                                <td>192.168.1.10</td>
+                                <td>2023-06-13 11:45:12</td>
+                                <td>
+                                    <button class="view-details-btn" data-details='{"changes":{"price":[95000,120000],"description":["Llanta estándar","Llanta premium"]}}'>
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>Carlos Rodríguez</td>
+                                <td class="action-other">LOGIN</td>
+                                <td>System</td>
+                                <td>-</td>
+                                <td>192.168.1.10</td>
+                                <td>2023-06-15 08:15:02</td>
+                                <td>
+                                    <button class="view-details-btn" data-details='{"user_agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"}'>
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal para ver detalles -->
+<div class="details-popup" id="details-popup">
+    <div class="details-content">
+        <div class="details-header">
+            <h3 class="details-title">Detalles del Registro</h3>
+            <button class="close-details-btn" id="close-details-btn">&times;</button>
+        </div>
+        <div class="details-body" id="details-body"></div>
+    </div>
+</div>
+
+<script>
+    // Funcionalidad del modal de detalles
+    const detailsPopup = document.getElementById('details-popup');
+    const closeDetailsBtn = document.getElementById('close-details-btn');
+    const detailsBody = document.getElementById('details-body');
+    const viewDetailsBtns = document.querySelectorAll('.view-details-btn');
+    
+    // Mostrar detalles
+    viewDetailsBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const details = JSON.parse(e.target.getAttribute('data-details'));
+            detailsBody.textContent = JSON.stringify(details, null, 2);
+            detailsPopup.style.display = 'flex';
+        });
+    });
+    
+    // Cerrar modal de detalles
+    closeDetailsBtn.addEventListener('click', () => {
+        detailsPopup.style.display = 'none';
+    });
+    
+    // Cerrar al hacer clic fuera
+    window.addEventListener('click', (e) => {
+        if (e.target === detailsPopup) {
+            detailsPopup.style.display = 'none';
+        }
+    });
+    
+    // Filtrar registros (ejemplo básico)
+    document.getElementById('filter-action').addEventListener('change', filterLogs);
+    document.getElementById('filter-entity').addEventListener('change', filterLogs);
+    document.getElementById('filter-user').addEventListener('change', filterLogs);
+    document.getElementById('filter-date').addEventListener('change', filterLogs);
+    document.getElementById('search').addEventListener('input', filterLogs);
+    
+    function filterLogs() {
+        const actionFilter = document.getElementById('filter-action').value.toUpperCase();
+        const entityFilter = document.getElementById('filter-entity').value.toUpperCase();
+        const userFilter = document.getElementById('filter-user').value.toUpperCase();
+        const dateFilter = document.getElementById('filter-date').value;
+        const searchFilter = document.getElementById('search').value.toUpperCase();
+        
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const action = row.querySelector('td:nth-child(3)').textContent.toUpperCase();
+            const entity = row.querySelector('td:nth-child(4)').textContent.toUpperCase();
+            const user = row.querySelector('td:nth-child(2)').textContent.toUpperCase();
+            const date = row.querySelector('td:nth-child(7)').textContent;
+            const rowText = row.textContent.toUpperCase();
+            
+            const actionMatch = !actionFilter || action.includes(actionFilter);
+            const entityMatch = !entityFilter || entity.includes(entityFilter);
+            const userMatch = !userFilter || user.includes(userFilter);
+            const dateMatch = !dateFilter || date.startsWith(dateFilter);
+            const searchMatch = !searchFilter || rowText.includes(searchFilter);
+            
+            if (actionMatch && entityMatch && userMatch && dateMatch && searchMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     // Constantes y configuraciones
     const CONFIG = {
-        apiBaseUrl: "http://localhost:8080",
+        apiBaseUrl: "http://192.168.56.1:8080",
         endpoints: {
             items: "/items/public/page",
             itemTypes: "/api/itemtypes",
