@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Constantes y configuraciones
     const CONFIG = {
-        apiBaseUrl: "http://192.168.56.1:8080",
+        apiBaseUrl: "http://localhost:8080",
         endpoints: {
             items: "/items/public/page",
             itemTypes: "/api/itemtypes",
@@ -311,16 +311,54 @@ document.addEventListener("DOMContentLoaded", function () {
         async loadItems(page = 1, search = '', type = '', stock = '') {
             let url = `${CONFIG.apiBaseUrl}${CONFIG.endpoints.items}?page=${page}`;
 
+            // Agregar parámetros de filtro si existen
             if (search) url += `&search=${encodeURIComponent(search)}`;
-            if (type) url += `&type=${encodeURIComponent(type)}`;
-            if (stock) {
-                if (stock === 'low') url += '&minStock=0&maxStock=5';
-                if (stock === 'out') url += '&minStock=0&maxStock=0';
+            if (type) url += `&itemTypeId=${encodeURIComponent(type)}`;
+
+            // Manejar filtro de stock
+            if (stock === 'low') {
+                url += '&minStock=0&maxStock=5';
+            } else if (stock === 'out') {
+                url += '&minStock=0&maxStock=0';
             }
 
+            // Mostrar loader inmediatamente
+            this.showLoader();
+
+            // Crear una promesa de mínimo 500ms para el loader
+            const minLoaderTime = new Promise(resolve => setTimeout(resolve, 500));
+
             try {
-                const response = await fetch(url);
+
+                const fetchPromise  = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                const [_, response] = await Promise.all([minLoaderTime, fetchPromise]);
+
+                // Verificar si la respuesta fue exitosa (status 200-299)
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    const errorMessage = errorData?.message || 'Error al cargar los ítems';
+
+                    if (response.status === 404) {
+                        // Caso especial para "No se encontraron ítems"
+                        this.handleNoItemsFound();
+                        return;
+                    }
+
+                    throw new Error(errorMessage);
+                }
+
                 const data = await response.json();
+
+                // Verificar si hay items
+                if (!data.items || data.items.length === 0) {
+                    this.handleNoItemsFound();
+                    return;
+                }
 
                 this.totalPages = data.totalPages;
                 this.currentPage = data.currentPage;
@@ -328,10 +366,117 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 this.updatePagination();
                 this.renderItemsTable();
+
             } catch (error) {
                 console.error('Error loading items:', error);
-                NotificationManager.showNotification('Error al cargar los ítems', 'error');
+
+                // Manejar diferentes tipos de errores
+                if (error.message === 'Failed to fetch') {
+                    // Error de conexión con el servidor
+                    NotificationManager.showNotification(
+                        'No se pudo conectar con el servidor. Verifique su conexión al servidor.',
+                        'error'
+                    );
+                    this.showConnectionError();
+                } else {
+                    // Otros errores
+                    NotificationManager.showNotification(
+                        error.message || 'Error al cargar los ítems',
+                        'error'
+                    );
+                    this.showGenericError();
+                }
             }
+        },
+
+        // Nuevos métodos auxiliares
+        showLoader() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="loading-row">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Cargando ítems...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        },
+
+        handleNoItemsFound() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="no-items-row">
+                        <div class="no-items-message">
+                            <i class="fas fa-box-open"></i>
+                            <span>No se encontraron ítems con los filtros actuales</span>
+                        </div>
+                        <button class="secondary-btn reset-filters-btn">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            // Agregar evento al botón de reset
+            document.querySelector('.reset-filters-btn')?.addEventListener('click', () => {
+                this.resetFilters();
+            });
+        },
+
+        showConnectionError() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="error-row">
+                        <div class="error-message">
+                            <i class="fas fa-wifi-slash"></i>
+                            <span>Error de conexión con el servidor</span>
+                        </div>
+                        <button class="secondary-btn retry-btn">
+                            <i class="fas fa-sync-alt"></i> Reintentar
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            // Agregar evento al botón de reintentar
+            document.querySelector('.retry-btn')?.addEventListener('click', () => {
+                this.loadItems(
+                    this.currentPage,
+                    this.elements.itemSearch?.value,
+                    this.elements.itemTypeFilter?.value,
+                    this.elements.stockFilter?.value
+                );
+            });
+        },
+
+        showGenericError() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="error-row">
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Ocurrió un error al cargar los ítems</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        },
+
+        resetFilters() {
+            if (this.elements.itemSearch) this.elements.itemSearch.value = '';
+            if (this.elements.itemTypeFilter) this.elements.itemTypeFilter.value = '';
+            if (this.elements.stockFilter) this.elements.stockFilter.value = '';
+
+            this.loadItems(1); // Volver a cargar desde la página 1 sin filtros
         },
         async handleStockUpdate(event) {
             event.preventDefault();
