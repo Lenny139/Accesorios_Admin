@@ -44,11 +44,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         setupNavLinks() {
             DOM.navLinks.forEach(link => {
-                link.addEventListener("click", (event) => {
-                    event.preventDefault();
-                    this.loadPage(link.getAttribute("data-page"));
-                    this.setActiveLink(link);
-                });
+                // Solo agregar el event listener si no es el enlace de correo
+                if (!link.href.includes('192.168.1.8/mail')) {
+                    link.addEventListener("click", (event) => {
+                        event.preventDefault();
+                        this.loadPage(link.getAttribute("data-page"));
+                        this.setActiveLink(link);
+                    });
+                }
             });
         },
 
@@ -70,6 +73,8 @@ document.addEventListener("DOMContentLoaded", function () {
         loadInitialPage() {
             const initialPage = location.hash ? location.hash.substring(1) : "dashboard.html";
             this.loadPage(initialPage, false);
+            this.setActiveLink(document.querySelector(`.nav-link[data-page="${initialPage}"]`) || 
+                             document.querySelector('.nav-link[data-page="dashboard.html"]'));
         },
 
         async loadPage(url, addToHistory = true) {
@@ -83,23 +88,36 @@ document.addEventListener("DOMContentLoaded", function () {
                         </h2>
                     </div>
                 `;
-
-                const response = await fetch(url);
-                if (!response.ok) throw new Error("Failed to load page");
-                const html = await response.text();
-
-                // Insertar nuevo contenido con animación
-                DOM.content.innerHTML = html;
-                DOM.content.firstElementChild.classList.add("fade-in");
-
-                if (url === "items.html") {
-                    ItemsManager.init();
+        
+                if (url === "correo-iframe") {
+                    // Caso especial para el cliente de correo
+                    DOM.content.innerHTML = `
+                        <div class="card fade-in" style="height: calc(100vh - 5rem); padding: 0; overflow: hidden;">
+                            <iframe src="https://10.152.190.52/mail" 
+                                    style="width: 100%; height: 100%; border: none;"
+                                    allow="fullscreen">
+                            </iframe>
+                        </div>
+                    `;
+                } else {
+                    // Carga normal de páginas
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error("Failed to load page");
+                    const html = await response.text();
+        
+                    // Insertar nuevo contenido con animación
+                    DOM.content.innerHTML = html;
+                    DOM.content.firstElementChild.classList.add("fade-in");
+        
+                    if (url === "items.html") {
+                        ItemsManager.init();
+                    }
                 }
-
+        
                 if (addToHistory) {
                     history.pushState({ page: url }, "", `#${url}`);
                 }
-
+        
             } catch (error) {
                 console.error("Error loading page:", error);
                 DOM.content.innerHTML = `

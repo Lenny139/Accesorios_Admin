@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - Accesorios AUTO-UPB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #e6e9ff;
+            --text: #333;
+            --text-light: #666;
+            --border: #e0e0e0;
+            --bg: #f8f9fa;
+            --card-bg: #fff;
+            --danger: #ff4757;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --info: #3498db;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .report-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 2rem;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1rem;
+        }
+
+        .report-title {
+            font-size: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .report-filters {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .filter-group label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .filter-group select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-change {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .change-up {
+            color: var(--success);
+        }
+
+        .change-down {
+            color: var(--danger);
+        }
+
+        .chart-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-placeholder {
+            background: var(--bg);
+            border-radius: 8px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            border: 1px dashed var(--border);
+        }
+
+        .distribution-list {
+            list-style-type: none;
+        }
+
+        .distribution-item {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .distribution-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+            line-height: 0;
+        }
+
+        .distribution-label {
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+
+        .distribution-value {
+            color: var(--text-light);
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .report-filters {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <h1 class="report-title">
+                <i class="fas fa-chart-bar"></i>
+                Reportes de Ventas y Rentabilidad
+            </h1>
+            <div class="report-filters">
+                <div class="filter-group">
+                    <label for="report-period">Periodo</label>
+                    <select id="report-period">
+                        <option value="month" selected>Este mes</option>
+                        <option value="week">Esta semana</option>
+                        <option value="quarter">Este trimestre</option>
+                        <option value="year">Este año</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="report-category">Categoría</label>
+                    <select id="report-category">
+                        <option value="all" selected>Todas</option>
+                        <option value="llantas">Llantas</option>
+                        <option value="accesorios">Accesorios</option>
+                        <option value="servicios">Servicios</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-title">
+                    <i class="fas fa-dollar-sign"></i>
+                    Ventas Totales
+                </div>
+                <div class="metric-value">$12,450,000</div>
+                <div class="metric-change change-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>12% vs mes anterior</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">
+                    <i class="fas fa-percentage"></i>
+                    Margen de Ganancia
+                </div>
+                <div class="metric-value">32%</div>
+                <div class="metric-change change-up">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>3% vs mes anterior</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">
+                    <i class="fas fa-undo"></i>
+                    Devoluciones
+                </div>
+                <div class="metric-value">5.2%</div>
+                <div class="metric-change change-down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>1.1% vs mes anterior</span>
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Pérdidas
+                </div>
+                <div class="metric-value">$320,000</div>
+                <div class="metric-change change-down">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>8% vs mes anterior</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3 class="section-title">
+                <i class="fas fa-chart-pie"></i>
+                Distribución de Ganancias
+            </h3>
+            <ul class="distribution-list">
+                <li class="distribution-item">
+                    <span class="distribution-label">Ventas brutas:</span>
+                    <span class="distribution-value">$12,450,000 (100%)</span>
+                </li>
+                <li class="distribution-item">
+                    <span class="distribution-label">Costos:</span>
+                    <span class="distribution-value">$8,466,000 (68%)</span>
+                </li>
+                <li class="distribution-item">
+                    <span class="distribution-label">Ganancias:</span>
+                    <span class="distribution-value">$3,984,000 (32%)</span>
+                </li>
+                <li class="distribution-item">
+                    <span class="distribution-label">Devoluciones:</span>
+                    <span class="distribution-value">$647,000 (5.2%)</span>
+                </li>
+                <li class="distribution-item">
+                    <span class="distribution-label">Pérdidas:</span>
+                    <span class="distribution-value">$320,000 (2.6%)</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="chart-section">
+            <h3 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Tendencia de Ventas
+            </h3>
+            <div class="chart-placeholder">
+                [Gráfico de tendencia de ventas]
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h3 class="section-title">
+                <i class="fas fa-exchange-alt"></i>
+                Devoluciones por Categoría
+            </h3>
+            <ul class="distribution-list">
+                <li class="distribution-item">
+                    <span class="distribution-label">Llantas:</span>
+                    <span class="distribution-value">6.8%</span>
+                </li>
+                <li class="distribution-item">
+                    <span class="distribution-label">Accesorios:</span>
+                    <span class="distribution-value">5.0%</span>
+                </li>
+                <li class="distribution-item">
+                    <span class="distribution-label">Servicios:</span>
+                    <span class="distribution-value">0.5%</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
