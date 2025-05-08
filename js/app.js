@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Constantes y configuraciones
     const CONFIG = {
-        apiBaseUrl: "http://192.168.56.1:8080",
+        apiBaseUrl: "http://192.168.28.131:8080",
         endpoints: {
             items: "/items/public/page",
             itemTypes: "/api/itemtypes",
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         ItemsManager.init();
                     }
                 }
-        
+
                 if (addToHistory) {
                     history.pushState({ page: url }, "", `#${url}`);
                 }
@@ -329,16 +329,54 @@ document.addEventListener("DOMContentLoaded", function () {
         async loadItems(page = 1, search = '', type = '', stock = '') {
             let url = `${CONFIG.apiBaseUrl}${CONFIG.endpoints.items}?page=${page}`;
 
+            // Agregar parámetros de filtro si existen
             if (search) url += `&search=${encodeURIComponent(search)}`;
-            if (type) url += `&type=${encodeURIComponent(type)}`;
-            if (stock) {
-                if (stock === 'low') url += '&minStock=0&maxStock=5';
-                if (stock === 'out') url += '&minStock=0&maxStock=0';
+            if (type) url += `&itemTypeId=${encodeURIComponent(type)}`;
+
+            // Manejar filtro de stock
+            if (stock === 'low') {
+                url += '&minStock=0&maxStock=5';
+            } else if (stock === 'out') {
+                url += '&minStock=0&maxStock=0';
             }
 
+            // Mostrar loader inmediatamente
+            this.showLoader();
+
+            // Crear una promesa de mínimo 500ms para el loader
+            const minLoaderTime = new Promise(resolve => setTimeout(resolve, 500));
+
             try {
-                const response = await fetch(url);
+
+                const fetchPromise  = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                const [_, response] = await Promise.all([minLoaderTime, fetchPromise]);
+
+                // Verificar si la respuesta fue exitosa (status 200-299)
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => null);
+                    const errorMessage = errorData?.message || 'Error al cargar los ítems';
+
+                    if (response.status === 404) {
+                        // Caso especial para "No se encontraron ítems"
+                        this.handleNoItemsFound();
+                        return;
+                    }
+
+                    throw new Error(errorMessage);
+                }
+
                 const data = await response.json();
+
+                // Verificar si hay items
+                if (!data.items || data.items.length === 0) {
+                    this.handleNoItemsFound();
+                    return;
+                }
 
                 this.totalPages = data.totalPages;
                 this.currentPage = data.currentPage;
@@ -346,10 +384,117 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 this.updatePagination();
                 this.renderItemsTable();
+
             } catch (error) {
                 console.error('Error loading items:', error);
-                NotificationManager.showNotification('Error al cargar los ítems', 'error');
+
+                // Manejar diferentes tipos de errores
+                if (error.message === 'Failed to fetch') {
+                    // Error de conexión con el servidor
+                    NotificationManager.showNotification(
+                        'No se pudo conectar con el servidor. Verifique su conexión al servidor.',
+                        'error'
+                    );
+                    this.showConnectionError();
+                } else {
+                    // Otros errores
+                    NotificationManager.showNotification(
+                        error.message || 'Error al cargar los ítems',
+                        'error'
+                    );
+                    this.showGenericError();
+                }
             }
+        },
+
+        // Nuevos métodos auxiliares
+        showLoader() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="loading-row">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span>Cargando ítems...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        },
+
+        handleNoItemsFound() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="no-items-row">
+                        <div class="no-items-message">
+                            <i class="fas fa-box-open"></i>
+                            <span>No se encontraron ítems con los filtros actuales</span>
+                        </div>
+                        <button class="secondary-btn reset-filters-btn">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            // Agregar evento al botón de reset
+            document.querySelector('.reset-filters-btn')?.addEventListener('click', () => {
+                this.resetFilters();
+            });
+        },
+
+        showConnectionError() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="error-row">
+                        <div class="error-message">
+                            <i class="fas fa-wifi-slash"></i>
+                            <span>Error de conexión con el servidor</span>
+                        </div>
+                        <button class="secondary-btn retry-btn">
+                            <i class="fas fa-sync-alt"></i> Reintentar
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+            // Agregar evento al botón de reintentar
+            document.querySelector('.retry-btn')?.addEventListener('click', () => {
+                this.loadItems(
+                    this.currentPage,
+                    this.elements.itemSearch?.value,
+                    this.elements.itemTypeFilter?.value,
+                    this.elements.stockFilter?.value
+                );
+            });
+        },
+
+        showGenericError() {
+            if (!this.elements.itemsTable) return;
+
+            this.elements.itemsTable.innerHTML = `
+                <tr>
+                    <td colspan="10" class="error-row">
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Ocurrió un error al cargar los ítems</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        },
+
+        resetFilters() {
+            if (this.elements.itemSearch) this.elements.itemSearch.value = '';
+            if (this.elements.itemTypeFilter) this.elements.itemTypeFilter.value = '';
+            if (this.elements.stockFilter) this.elements.stockFilter.value = '';
+
+            this.loadItems(1); // Volver a cargar desde la página 1 sin filtros
         },
         async handleStockUpdate(event) {
             event.preventDefault();
@@ -872,6 +1017,108 @@ document.addEventListener("DOMContentLoaded", function () {
                 saveBtn.textContent = originalBtnText;
                 saveBtn.disabled = false;
             }
+        }
+    };
+
+    const FacturasManager = {
+        init() {
+            this.cacheElements();
+            this.setupEventListeners();
+            this.loadFacturas();
+        },
+
+        cacheElements() {
+            this.elements = {
+                tablaFacturas: document.querySelector("table tbody"),
+                estadoFiltro: document.getElementById("invoice-status"),
+                clienteFiltro: document.getElementById("customer"),
+                fechaDesde: document.getElementById("date-from"),
+                fechaHasta: document.getElementById("date-to"),
+                buscarInput: document.querySelector(".search-bar input"),
+                filtrarBtn: document.querySelector(".btn-primary i.fa-filter")?.closest("button"),
+                buscarBtn: document.querySelector(".search-bar button"),
+                paginacionBtns: document.querySelectorAll(".pagination-btn")
+            };
+        },
+
+        setupEventListeners() {
+            this.elements.filtrarBtn?.addEventListener("click", () => this.loadFacturas());
+            this.elements.buscarBtn?.addEventListener("click", () => this.loadFacturas());
+
+            this.elements.paginacionBtns.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const pagina = parseInt(btn.textContent.trim());
+                    if (!isNaN(pagina)) this.loadFacturas(pagina - 1);
+                });
+            });
+
+            // Aquí puedes añadir listeners a los botones de acciones por fila
+        },
+
+        async loadFacturas(pagina = 0) {
+            const estado = this.elements.estadoFiltro?.value || "";
+            const clienteId = this.elements.clienteFiltro?.value || "";
+            const fechaDesde = this.elements.fechaDesde?.value || "";
+            const fechaHasta = this.elements.fechaHasta?.value || "";
+            const buscar = this.elements.buscarInput?.value || "";
+
+            const url = new URL(`${CONFIG.apiBaseUrl}/api/facturas/getInvoice`);
+            url.searchParams.set("estado", estado !== "all" ? estado : "");
+            url.searchParams.set("clienteId", clienteId !== "all" ? clienteId : "");
+            url.searchParams.set("fechaDesde", fechaDesde);
+            url.searchParams.set("fechaHasta", fechaHasta);
+            url.searchParams.set("buscar", buscar);
+            url.searchParams.set("pagina", pagina);
+            url.searchParams.set("tamaño", 10);
+
+            try {
+                const authToken = localStorage.getItem("authToken");
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        "Authorization": `Bearer ${authToken}`
+                    }
+                });
+
+                const facturas = await response.json();
+                this.renderFacturas(facturas);
+            } catch (error) {
+                console.error("Error cargando facturas:", error);
+            }
+        },
+
+        renderFacturas(facturas) {
+            if (!this.elements.tablaFacturas) return;
+            this.elements.tablaFacturas.innerHTML = "";
+
+            if (facturas.length === 0) {
+                const row = this.elements.tablaFacturas.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 8;
+                cell.textContent = "No hay facturas para mostrar.";
+                return;
+            }
+
+            facturas.forEach(f => {
+                const row = this.elements.tablaFacturas.insertRow();
+                row.innerHTML = `
+                <td>${f.numero}</td>
+                <td>${f.fecha}</td>
+                <td>${f.clienteNombre}</td>
+                <td>$${f.total.toFixed(2)}</td>
+                <td>${f.metodoPago}</td>
+                <td><div class="status-indicator ${f.estado.toLowerCase()}"><i class="fas fa-circle"></i><span>${f.estado}</span></div></td>
+                <td>${f.fechaVencimiento}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline" data-id="${f.id}" data-action="ver"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-primary" data-id="${f.id}" data-action="pdf"><i class="fas fa-file-pdf"></i></button>
+                        <button class="btn btn-info" data-id="${f.id}" data-action="print"><i class="fas fa-print"></i></button>
+                    </div>
+                </td>
+            `;
+            });
+
+            // Aquí podrías agregar listeners para los botones recién generados si quieres manejar eventos como ver, pdf, print...
         }
     };
     // Inicialización

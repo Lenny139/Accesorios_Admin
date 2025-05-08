@@ -24,16 +24,19 @@
                 <label for="item-type-filter"><i class="fas fa-filter"></i> Tipo:</label>
                 <select id="item-type-filter">
                     <option value="">Todos</option>
-                    <option value="PARQ">Accesorios de parqueo</option>
-                    <option value="EXT">Exteriores</option>
-                    <option value="INTE">Interiores</option>
+                    <option value="PARQ">Parqueo</option>
+                    <option value="EXT">Externos</option>
+                    <option value="INTE">Internos</option>
+                    <option value="LUCES">Luces-Led</option>
+                    <option value="MOD_ELEVA">Modulo Elevavidrios</option>
+                    <option value="AUDIO">Audio</option>
                 </select>
             </div>
             <div class="filter-group">
                 <label for="stock-filter"><i class="fas fa-box-open"></i> Stock:</label>
                 <select id="stock-filter">
                     <option value="">Todos</option>
-                    <option value="low">Stock bajo (<5)</option>
+                    <option value="low">Stock bajo (&lt;5)</option>
                     <option value="out">Agotados</option>
                 </select>
             </div>
@@ -588,6 +591,69 @@
         padding: 0.75rem 1.5rem;
         border-radius: 6px;
         cursor: pointer;
+    }
+
+    /* Estilos para los errores de filtros*/
+
+    .loading-row, .no-items-row, .error-row {
+        text-align: center;
+        padding: 2rem !important;
+    }
+
+    .loading-spinner, .no-items-message, .error-message {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .loading-spinner i, .no-items-message i, .error-message i {
+        font-size: 2.5rem;
+        color: var(--primary);
+    }
+
+    .no-items-message i {
+        color: var(--text-light);
+    }
+
+    .error-message i {
+        color: var(--danger);
+    }
+
+    .secondary-btn {
+        background: none;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .secondary-btn:hover {
+        background-color: var(--primary-light);
+    }
+
+    .reset-filters-btn {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .reset-filters-btn:hover {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+
+    .retry-btn {
+        border-color: var(--warning);
+        color: var(--warning);
+    }
+
+    .retry-btn:hover {
+        background-color: rgba(255, 193, 7, 0.1);
     }
 
     /* Estilos para additional expenses */
