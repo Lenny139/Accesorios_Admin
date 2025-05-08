@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Constantes y configuraciones
     const CONFIG = {
-        apiBaseUrl: "http://192.168.28.131:8080",
+        apiBaseUrl: "http://localhost:8080",
         endpoints: {
             items: "/items/public/page",
             itemTypes: "/api/itemtypes",
@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loadInitialPage() {
             const initialPage = location.hash ? location.hash.substring(1) : "dashboard.html";
             this.loadPage(initialPage, false);
-            this.setActiveLink(document.querySelector(`.nav-link[data-page="${initialPage}"]`) || 
+            this.setActiveLink(document.querySelector(`.nav-link[data-page="${initialPage}"]`) ||
                              document.querySelector('.nav-link[data-page="dashboard.html"]'));
         },
 
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         </h2>
                     </div>
                 `;
-        
+
                 if (url === "correo-iframe") {
                     // Caso especial para el cliente de correo
                     DOM.content.innerHTML = `
@@ -104,20 +104,22 @@ document.addEventListener("DOMContentLoaded", function () {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error("Failed to load page");
                     const html = await response.text();
-        
+
                     // Insertar nuevo contenido con animación
                     DOM.content.innerHTML = html;
                     DOM.content.firstElementChild.classList.add("fade-in");
-        
+
                     if (url === "items.html") {
                         ItemsManager.init();
+                    }else if (url === "facturas.html") {
+                        FacturasManager.init();
                     }
                 }
 
                 if (addToHistory) {
                     history.pushState({ page: url }, "", `#${url}`);
                 }
-        
+
             } catch (error) {
                 console.error("Error loading page:", error);
                 DOM.content.innerHTML = `
@@ -1024,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", function () {
         init() {
             this.cacheElements();
             this.setupEventListeners();
-            this.loadFacturas();
+            this.loadFacturas(1); // Empezar en la página 1
         },
 
         cacheElements() {
@@ -1037,39 +1039,61 @@ document.addEventListener("DOMContentLoaded", function () {
                 buscarInput: document.querySelector(".search-bar input"),
                 filtrarBtn: document.querySelector(".btn-primary i.fa-filter")?.closest("button"),
                 buscarBtn: document.querySelector(".search-bar button"),
-                paginacionBtns: document.querySelectorAll(".pagination-btn")
+                paginationContainer: document.querySelector(".pagination")
             };
         },
 
         setupEventListeners() {
-            this.elements.filtrarBtn?.addEventListener("click", () => this.loadFacturas());
-            this.elements.buscarBtn?.addEventListener("click", () => this.loadFacturas());
+            this.elements.filtrarBtn?.addEventListener("click", () => this.loadFacturas(1));
+            this.elements.buscarBtn?.addEventListener("click", () => this.loadFacturas(1));
 
-            this.elements.paginacionBtns.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const pagina = parseInt(btn.textContent.trim());
-                    if (!isNaN(pagina)) this.loadFacturas(pagina - 1);
-                });
+            // Delegación de eventos para los botones de paginación
+            this.elements.paginationContainer?.addEventListener("click", (e) => {
+                if (e.target.classList.contains("pagination-btn")) {
+                    const pageText = e.target.textContent.trim();
+
+                    // No hacer nada si son los puntos suspensivos
+                    if (pageText === "...") return;
+
+                    // Manejar flechas de navegación
+                    if (e.target.querySelector("i")) {
+                        const currentPage = parseInt(this.elements.paginationContainer.querySelector(".active")?.textContent || 1);
+
+                        if (e.target.querySelector(".fa-chevron-left")) {
+                            this.loadFacturas(Math.max(1, currentPage - 1));
+                        } else if (e.target.querySelector(".fa-chevron-right")) {
+                            // Necesitamos conocer el total de páginas, pero lo manejaremos en loadFacturas
+                            // Por ahora solo incrementamos
+                            this.loadFacturas(currentPage + 1);
+                        }
+                        return;
+                    }
+
+                    // Manejar números de página
+                    const page = parseInt(pageText);
+                    if (!isNaN(page)) {
+                        this.loadFacturas(page);
+                    }
+                }
             });
 
             // Aquí puedes añadir listeners a los botones de acciones por fila
         },
 
-        async loadFacturas(pagina = 0) {
+        async loadFacturas(pagina = 1) {
             const estado = this.elements.estadoFiltro?.value || "";
             const clienteId = this.elements.clienteFiltro?.value || "";
             const fechaDesde = this.elements.fechaDesde?.value || "";
             const fechaHasta = this.elements.fechaHasta?.value || "";
             const buscar = this.elements.buscarInput?.value || "";
 
-            const url = new URL(`${CONFIG.apiBaseUrl}/api/facturas/getInvoice`);
+            const url = new URL(`${CONFIG.apiBaseUrl}/api/facturas/getInvoice/page`);
+            url.searchParams.set("page", pagina);
             url.searchParams.set("estado", estado !== "all" ? estado : "");
             url.searchParams.set("clienteId", clienteId !== "all" ? clienteId : "");
             url.searchParams.set("fechaDesde", fechaDesde);
             url.searchParams.set("fechaHasta", fechaHasta);
             url.searchParams.set("buscar", buscar);
-            url.searchParams.set("pagina", pagina);
-            url.searchParams.set("tamaño", 10);
 
             try {
                 const authToken = localStorage.getItem("authToken");
@@ -1079,8 +1103,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 });
 
-                const facturas = await response.json();
-                this.renderFacturas(facturas);
+                const data = await response.json();
+                this.renderFacturas(data.invoices);
+                this.renderPagination(data, pagina);
             } catch (error) {
                 console.error("Error cargando facturas:", error);
             }
@@ -1090,7 +1115,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!this.elements.tablaFacturas) return;
             this.elements.tablaFacturas.innerHTML = "";
 
-            if (facturas.length === 0) {
+            if (!facturas || facturas.length === 0) {
                 const row = this.elements.tablaFacturas.insertRow();
                 const cell = row.insertCell();
                 cell.colSpan = 8;
@@ -1101,13 +1126,13 @@ document.addEventListener("DOMContentLoaded", function () {
             facturas.forEach(f => {
                 const row = this.elements.tablaFacturas.insertRow();
                 row.innerHTML = `
-                <td>${f.numero}</td>
-                <td>${f.fecha}</td>
+                <td>${f.numero || 'N/A'}</td>
+                <td>${new Date(f.fecha).toLocaleDateString()}</td>
                 <td>${f.clienteNombre}</td>
                 <td>$${f.total.toFixed(2)}</td>
-                <td>${f.metodoPago}</td>
-                <td><div class="status-indicator ${f.estado.toLowerCase()}"><i class="fas fa-circle"></i><span>${f.estado}</span></div></td>
-                <td>${f.fechaVencimiento}</td>
+                <td>${f.metodoPago || 'N/A'}</td>
+                <td><div class="status-indicator ${this.getEstadoClass(f.estado)}"><i class="fas fa-circle"></i><span>${this.getEstadoText(f.estado)}</span></div></td>
+                <td>${f.vencimiento ? new Date(f.vencimiento).toLocaleDateString() : 'N/A'}</td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn btn-outline" data-id="${f.id}" data-action="ver"><i class="fas fa-eye"></i></button>
@@ -1117,10 +1142,70 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
             `;
             });
+        },
 
-            // Aquí podrías agregar listeners para los botones recién generados si quieres manejar eventos como ver, pdf, print...
+        getEstadoClass(estado) {
+            // Mapea el estado del backend a clases CSS
+            if (estado.includes("PENDIENTE")) return "pending";
+            if (estado.includes("PAGADA")) return "paid";
+            if (estado.includes("VENCIDA")) return "overdue";
+            if (estado.includes("PARCIAL")) return "partial";
+            if (estado.includes("CANCELADA")) return "canceled";
+            return "";
+        },
+
+        getEstadoText(estado) {
+            // Extrae el texto legible del estado
+            const match = estado.match(/\.([A-Z_]+)/);
+            if (match && match[1]) {
+                return match[1].replace(/_/g, ' ');
+            }
+            return estado;
+        },
+
+        renderPagination(data, currentPage) {
+            if (!this.elements.paginationContainer) return;
+
+            this.elements.paginationContainer.innerHTML = '';
+
+            // Botón anterior
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            this.elements.paginationContainer.appendChild(prevBtn);
+
+            // Botones de páginas
+            if (data.pagesToShow) {
+                data.pagesToShow.forEach(page => {
+                    const btn = document.createElement('button');
+                    btn.className = 'pagination-btn';
+
+                    if (page === "...") {
+                        btn.textContent = "...";
+                        btn.disabled = true;
+                        btn.style.cursor = 'default';
+                        btn.style.backgroundColor = 'transparent';
+                        btn.style.border = 'none';
+                    } else {
+                        btn.textContent = page;
+                        if (parseInt(page) === currentPage) {
+                            btn.classList.add('active');
+                        }
+                    }
+
+                    this.elements.paginationContainer.appendChild(btn);
+                });
+            }
+
+            // Botón siguiente
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === data.totalPages;
+            this.elements.paginationContainer.appendChild(nextBtn);
         }
-    };
+    };;
     // Inicialización
     NavigationManager.init();
 });

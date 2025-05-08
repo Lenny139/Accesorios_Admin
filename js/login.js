@@ -20,19 +20,18 @@ document.getElementById('adminLoginForm').addEventListener('submit', async funct
     }
 });
 
-    async function authenticateUser(email, password) {
-        try {
-            const response = await fetch('http://192.168.28.131:8080/autenticacion/validacion', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                    // REMOVER el header Authorization del login
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            });
+async function authenticateUser(email, password) {
+    try {
+        const response = await fetch('http://localhost:8080/autenticacion/validacion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
 
         const data = await response.json();
 
