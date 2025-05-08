@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Constantes y configuraciones
     const CONFIG = {
-        apiBaseUrl: "http://localhost:8080",
+        apiBaseUrl: "http://192.168.28.131:8080",
         endpoints: {
             items: "/items/public/page",
             itemTypes: "/api/itemtypes",
@@ -94,6 +94,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 if (url === "items.html") {
                     ItemsManager.init();
+                }
+                if (url === "facturas.html") {
+                    FacturasManager.init();
                 }
 
                 if (addToHistory) {
@@ -999,6 +1002,108 @@ document.addEventListener("DOMContentLoaded", function () {
                 saveBtn.textContent = originalBtnText;
                 saveBtn.disabled = false;
             }
+        }
+    };
+
+    const FacturasManager = {
+        init() {
+            this.cacheElements();
+            this.setupEventListeners();
+            this.loadFacturas();
+        },
+
+        cacheElements() {
+            this.elements = {
+                tablaFacturas: document.querySelector("table tbody"),
+                estadoFiltro: document.getElementById("invoice-status"),
+                clienteFiltro: document.getElementById("customer"),
+                fechaDesde: document.getElementById("date-from"),
+                fechaHasta: document.getElementById("date-to"),
+                buscarInput: document.querySelector(".search-bar input"),
+                filtrarBtn: document.querySelector(".btn-primary i.fa-filter")?.closest("button"),
+                buscarBtn: document.querySelector(".search-bar button"),
+                paginacionBtns: document.querySelectorAll(".pagination-btn")
+            };
+        },
+
+        setupEventListeners() {
+            this.elements.filtrarBtn?.addEventListener("click", () => this.loadFacturas());
+            this.elements.buscarBtn?.addEventListener("click", () => this.loadFacturas());
+
+            this.elements.paginacionBtns.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const pagina = parseInt(btn.textContent.trim());
+                    if (!isNaN(pagina)) this.loadFacturas(pagina - 1);
+                });
+            });
+
+            // Aquí puedes añadir listeners a los botones de acciones por fila
+        },
+
+        async loadFacturas(pagina = 0) {
+            const estado = this.elements.estadoFiltro?.value || "";
+            const clienteId = this.elements.clienteFiltro?.value || "";
+            const fechaDesde = this.elements.fechaDesde?.value || "";
+            const fechaHasta = this.elements.fechaHasta?.value || "";
+            const buscar = this.elements.buscarInput?.value || "";
+
+            const url = new URL(`${CONFIG.apiBaseUrl}/api/facturas/getInvoice`);
+            url.searchParams.set("estado", estado !== "all" ? estado : "");
+            url.searchParams.set("clienteId", clienteId !== "all" ? clienteId : "");
+            url.searchParams.set("fechaDesde", fechaDesde);
+            url.searchParams.set("fechaHasta", fechaHasta);
+            url.searchParams.set("buscar", buscar);
+            url.searchParams.set("pagina", pagina);
+            url.searchParams.set("tamaño", 10);
+
+            try {
+                const authToken = localStorage.getItem("authToken");
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        "Authorization": `Bearer ${authToken}`
+                    }
+                });
+
+                const facturas = await response.json();
+                this.renderFacturas(facturas);
+            } catch (error) {
+                console.error("Error cargando facturas:", error);
+            }
+        },
+
+        renderFacturas(facturas) {
+            if (!this.elements.tablaFacturas) return;
+            this.elements.tablaFacturas.innerHTML = "";
+
+            if (facturas.length === 0) {
+                const row = this.elements.tablaFacturas.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 8;
+                cell.textContent = "No hay facturas para mostrar.";
+                return;
+            }
+
+            facturas.forEach(f => {
+                const row = this.elements.tablaFacturas.insertRow();
+                row.innerHTML = `
+                <td>${f.numero}</td>
+                <td>${f.fecha}</td>
+                <td>${f.clienteNombre}</td>
+                <td>$${f.total.toFixed(2)}</td>
+                <td>${f.metodoPago}</td>
+                <td><div class="status-indicator ${f.estado.toLowerCase()}"><i class="fas fa-circle"></i><span>${f.estado}</span></div></td>
+                <td>${f.fechaVencimiento}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline" data-id="${f.id}" data-action="ver"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-primary" data-id="${f.id}" data-action="pdf"><i class="fas fa-file-pdf"></i></button>
+                        <button class="btn btn-info" data-id="${f.id}" data-action="print"><i class="fas fa-print"></i></button>
+                    </div>
+                </td>
+            `;
+            });
+
+            // Aquí podrías agregar listeners para los botones recién generados si quieres manejar eventos como ver, pdf, print...
         }
     };
     // Inicialización

@@ -332,9 +332,6 @@
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
-                <button class="btn btn-success">
-                    <i class="fas fa-plus"></i> Nueva Factura
-                </button>
             </div>
 
             <div class="invoices-filters">
@@ -354,6 +351,7 @@
                     <label for="customer">Cliente</label>
                     <select id="customer">
                         <option value="all">Todos los clientes</option>
+                        <!-- Estos se pueden poblar dinámicamente si se quiere -->
                         <option value="1">Juan Martínez</option>
                         <option value="2">María González</option>
                         <option value="3">Carlos Rodríguez</option>
@@ -381,181 +379,19 @@
             <div class="table-container">
                 <table>
                     <thead>
-                        <tr>
-                            <th>N° Factura</th>
-                            <th>Fecha</th>
-                            <th>Cliente</th>
-                            <th>Total</th>
-                            <th>Método Pago</th>
-                            <th>Estado</th>
-                            <th>Vencimiento</th>
-                            <th>Acciones</th>
-                        </tr>
+                    <tr>
+                        <th>N° Factura</th>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Total</th>
+                        <th>Método Pago</th>
+                        <th>Estado</th>
+                        <th>Vencimiento</th>
+                        <th>Acciones</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>#FAC-2023-105</td>
-                            <td>18/06/2023</td>
-                            <td>Juan Martínez</td>
-                            <td>$1,250.00</td>
-                            <td>
-                                <div class="payment-method card">
-                                    <i class="fas fa-credit-card"></i>
-                                    <span>Tarjeta</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="status-indicator paid">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Pagada</span>
-                                </div>
-                            </td>
-                            <td>18/07/2023</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-outline">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-primary">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button class="btn btn-info">
-                                        <i class="fas fa-print"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#FAC-2023-104</td>
-                            <td>15/06/2023</td>
-                            <td>María González</td>
-                            <td>$890.50</td>
-                            <td>
-                                <div class="payment-method transfer">
-                                    <i class="fas fa-exchange-alt"></i>
-                                    <span>Transferencia</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="status-indicator paid">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Pagada</span>
-                                </div>
-                            </td>
-                            <td>15/07/2023</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-outline">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-primary">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button class="btn btn-info">
-                                        <i class="fas fa-print"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#FAC-2023-103</td>
-                            <td>12/06/2023</td>
-                            <td>Carlos Rodríguez</td>
-                            <td>$2,150.75</td>
-                            <td>
-                                <div class="payment-method cash">
-                                    <i class="fas fa-money-bill-wave"></i>
-                                    <span>Efectivo</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="status-indicator paid">
-                                    <i class="fas fa-check-circle"></i>
-                                    <span>Pagada</span>
-                                </div>
-                            </td>
-                            <td>12/07/2023</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-outline">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-primary">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button class="btn btn-info">
-                                        <i class="fas fa-print"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#FAC-2023-102</td>
-                            <td>10/06/2023</td>
-                            <td>Ana López</td>
-                            <td>$750.30</td>
-                            <td>
-                                <div class="payment-method card">
-                                    <i class="fas fa-credit-card"></i>
-                                    <span>Tarjeta</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="status-indicator pending">
-                                    <i class="fas fa-clock"></i>
-                                    <span>Pendiente</span>
-                                </div>
-                            </td>
-                            <td>10/07/2023</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-outline">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-primary">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button class="btn btn-success">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button class="btn btn-danger">
-                                        <i class="fas fa-ban"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#FAC-2023-101</td>
-                            <td>05/06/2023</td>
-                            <td>Juan Martínez</td>
-                            <td>$1,850.00</td>
-                            <td>
-                                <div class="payment-method transfer">
-                                    <i class="fas fa-exchange-alt"></i>
-                                    <span>Transferencia</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="status-indicator overdue">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    <span>Vencida</span>
-                                </div>
-                            </td>
-                            <td>05/07/2023</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn btn-outline">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-primary">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-                                    <button class="btn btn-warning">
-                                        <i class="fas fa-envelope"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                    <!-- Se llena dinámicamente con FacturasManager -->
                     </tbody>
                 </table>
 
@@ -569,6 +405,7 @@
             </div>
         </div>
     </div>
+
 
     <script>
         // Script para manejar la interacción con los filtros y la paginación
